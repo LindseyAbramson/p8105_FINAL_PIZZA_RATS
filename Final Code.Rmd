@@ -1,0 +1,60 @@
+---
+title: "Final Code"
+output: github_document
+date: "2025-11-21"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(haven)
+library(glmnet)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+## Import Datasets
+Please note for all those who use this... run once and only once. Then add back in the # to comment this chunk out.
+```{r, eval=FALSE}
+rat_df =
+read_csv("data_not_for_github/NYC_rats.csv") |>
+janitor::clean_names() |>
+mutate(created_date = ymd_hms(created_date)) |>
+filter(year(created_date) == 2025) |>
+  select(created_date, incident_zip, borough, latitude, longitude, location_type)
+
+restaurant_df =
+read_csv("data_not_for_github/NYC_restaurant.csv") |>
+janitor::clean_names() |>
+mutate(inspection_date = mdy(inspection_date))   |>
+filter(year(inspection_date) == 2025) |>
+  select(dba, boro, zipcode, inspection_date, violation_description, grade, latitude, longitude)
+
+
+dir.create("data_small", showWarnings = FALSE)
+write_csv(rat_df, "data_small/rat_df_2025_small.csv")
+write_csv(restaurant_df, "data_small/restaurant_df_2025_small.csv")
+```
+
+```{r}
+rat_df <- read_csv("data_small/rat_df_2025_small.csv")
+restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
+```
+
+Our decision to use only 2025 data provides a current snapshot of rat sightings and restaurant inspections in NYC. This ensures relevance but means we cannot analyze longitudinal trends in rat populations, and some restaurants may be absent from our dataset if they weren't inspected during this specific time period.
