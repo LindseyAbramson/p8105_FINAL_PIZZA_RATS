@@ -398,7 +398,7 @@ zipcode_summary |&gt;
 <pre><code>## Warning: Removed 2 rows containing missing values or values outside the scale range
 ## (`geom_point()`).</code></pre>
 <p><img src="Final-Code_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
-<pre class="r"><code># Plotting rat sightings count vs. restuarant count
+<pre class="r"><code># Plotting rat sightings count vs. restaurant count
 zipcode_summary |&gt; 
   ggplot(aes(x = restaurant_count, y = ratreport_count)) +
   geom_point() +

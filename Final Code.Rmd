@@ -109,7 +109,7 @@ zipcode_summary |>
   ggplot(aes(x = pred, y = resid)) +
   geom_point() 
 
-# Plotting rat sightings count vs. restuarant count
+# Plotting rat sightings count vs. restaurant count
 zipcode_summary |> 
   ggplot(aes(x = restaurant_count, y = ratreport_count)) +
   geom_point() +
