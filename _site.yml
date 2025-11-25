@@ -1,0 +1,10 @@
+name: "Yay internet!"
+output_dir: "."
+navbar:
+  title: "Home"
+  right:
+    - text: "Home"
+      href: index.html
+output:
+  html_document:
+    theme: darkly
