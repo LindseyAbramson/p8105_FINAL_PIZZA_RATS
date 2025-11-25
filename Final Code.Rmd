@@ -84,4 +84,41 @@ zipcode_summary <- rat_summary |>
   left_join(restaurant_summary, by = "zipcode")
 ```
 
+## Regressing Rat Sightings Count Against Pizza Restaurant Count
+
+```{r}
+# Fitting a linear regression
+fit = lm(ratreport_count ~ restaurant_count, data = zipcode_summary)
+
+# Examining the regression output
+fit |> 
+  broom::tidy() |> 
+  select(term, estimate, p.value) |> 
+  knitr::kable(digits = 3)
+
+# Obtaining r-squared, p-value
+fit |> 
+  broom::glance() |> 
+  select(r.squared, p.value) |> 
+  knitr::kable(digits = 3)
+
+# Looking at the residuals vs. fitted values
+zipcode_summary |> 
+  modelr::add_residuals(fit) |> 
+  modelr::add_predictions(fit) |> 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point() 
+
+# Plotting rat sightings count vs. restuarant count
+zipcode_summary |> 
+  ggplot(aes(x = restaurant_count, y = ratreport_count)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    x = "# Pizza Restaurants",
+    y = "# Rat Sighting Reports",
+    title = "Rat Sightings vs. Pizza Restaurants"
+ )
+```
+
 
