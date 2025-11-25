@@ -1,0 +1,24 @@
+---
+title: "NYC Pizza Rats"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: darkly
+---
+
+# RatStats: Data by the Slice
+
+**Do the rats of New York City crave the unctuous, cheesy, saucy, crusty delight that draws tourists from around the world to the Big Apple—the unrivaled, saliva-inducing culinary masterpiece that is pizza?**
+
+![](https://i.cbc.ca/1.3237852.1442878202!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_1180/pizza-rat.jpg?im=Resize%3D860)
+
+While many New Yorkers (our renowned Rat Czar included) view their rodent neighbors as adversaries, we may have more in common than the skeptics care to admit.
+
+Rats have long been spotted hauling slices many times their size through the streets and subway tunnels—a dedication that rivals even the most determined late-night pizza seeker. Our team at the Pizza Rat Research Institute at Columbia Mailman is here to investigate the truth: *do rats actually like pizza?*
+
+Join us as we embark on this exploratory analysis to finally shed light on a question that has captivated—and perhaps haunted—our city for far too long.
+
+![](https://preview.redd.it/two-versions-of-the-nyc-pizza-rat-v0-6rkrd71p7kv81.jpg?width=1080&crop=smart&auto=webp&s=f78d3dc23b7f4e9d7d6bb471bdcb92deae9ea97d)
+
+![](https://preview.redd.it/two-versions-of-the-nyc-pizza-rat-v0-8nb4xeox7kv81.png?width=1080&crop=smart&auto=webp&s=d2e024261960c439b68f927e9a97585100ee2e62)
