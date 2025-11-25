@@ -30,7 +30,7 @@ scale_fill_discrete = scale_fill_viridis_d
 
 
 ## Import Datasets
-Please note for all those who use this... run once and only once. Then add back in the # to comment this chunk out.
+Please note for all those who use this... run once.
 ```{r, eval=FALSE}
 rat_df =
 read_csv("data_not_for_github/NYC_rats.csv") |>
@@ -56,9 +56,15 @@ write_csv(restaurant_df, "data_small/restaurant_df_2025_small.csv")
 ```{r}
 rat_df <- read_csv("data_small/rat_df_2025_small.csv")
 restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
+
+# Limit to only pizza joints
+pizza_df =
+  restaurant_df |>
+  filter((str_detect(str_to_lower(dba), 
+                    "pizza|pizzeria|slice")))
 ```
 
-Our decision to use only 2025 data provides a current snapshot of rat sightings and restaurant inspections in NYC. This ensures relevance but means we cannot analyze longitudinal trends in rat populations, and some restaurants may be absent from our dataset if they weren't inspected during this specific time period.
+Our decision to use only 2025 data provides a current snapshot of rat sightings and pizza restaurant inspections in NYC. This ensures relevance but means we cannot analyze longitudinal trends in rat populations, and some restaurants may be absent from our dataset if they weren't inspected during this specific time period. Our search terms for pizza restuarants include "pizza", "pizzeria", and "slice". Ideally this would cover all pizza joints but we recognize that some may fall under various other names!
 
 
 ## Merge Summaries by Zipcode
@@ -70,25 +76,25 @@ rat_summary <- rat_df |>
   summarise(ratreport_count = n(), .groups = "drop")
 
 # Count restaurants per zipcode by grade
-restaurant_summary <- restaurant_df |>
+pizza_summary <- pizza_df |>
   group_by(zipcode) |>
   summarise(
-    restaurant_count = n(),
-    grade_A = sum(grade == "A", na.rm = TRUE),
-    grade_B = sum(grade == "B", na.rm = TRUE),
-    grade_C = sum(grade == "C", na.rm = TRUE)
+    pizzarestaurant_count = n(),
+    pizza_A = sum(grade == "A", na.rm = TRUE),
+    pizza_B = sum(grade == "B", na.rm = TRUE),
+    pizza_C = sum(grade == "C", na.rm = TRUE)
   , .groups = "drop")
 
 # Join
 zipcode_summary <- rat_summary |>
-  left_join(restaurant_summary, by = "zipcode")
+  left_join(pizza_summary, by = "zipcode")
 ```
 
 ## Regressing Rat Sightings Count Against Pizza Restaurant Count
 
 ```{r}
 # Fitting a linear regression
-fit = lm(ratreport_count ~ restaurant_count, data = zipcode_summary)
+fit = lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
 
 # Examining the regression output
 fit |> 
@@ -111,7 +117,7 @@ zipcode_summary |>
 
 # Plotting rat sightings count vs. restaurant count
 zipcode_summary |> 
-  ggplot(aes(x = restaurant_count, y = ratreport_count)) +
+  ggplot(aes(x = pizzarestaurant_count, y = ratreport_count)) +
   geom_point() +
   geom_smooth(method = "lm", se = TRUE) +
   labs(

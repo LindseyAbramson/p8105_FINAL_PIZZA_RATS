@@ -266,8 +266,7 @@ $(document).ready(function () {
 
 <div id="import-datasets" class="section level2">
 <h2>Import Datasets</h2>
-<p>Please note for all those who use this… run once and only once. Then
-add back in the # to comment this chunk out.</p>
+<p>Please note for all those who use this… run once.</p>
 <pre class="r"><code>rat_df =
 read_csv(&quot;data_not_for_github/NYC_rats.csv&quot;) |&gt;
 janitor::clean_names() |&gt;
@@ -288,7 +287,7 @@ dir.create(&quot;data_small&quot;, showWarnings = FALSE)
 write_csv(rat_df, &quot;data_small/rat_df_2025_small.csv&quot;)
 write_csv(restaurant_df, &quot;data_small/restaurant_df_2025_small.csv&quot;)</code></pre>
 <pre class="r"><code>rat_df &lt;- read_csv(&quot;data_small/rat_df_2025_small.csv&quot;)</code></pre>
-<pre><code>## Rows: 18929 Columns: 6
+<pre><code>## Rows: 18905 Columns: 6
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (2): borough, location_type
@@ -298,7 +297,7 @@ write_csv(restaurant_df, &quot;data_small/restaurant_df_2025_small.csv&quot;)</c
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>restaurant_df &lt;- read_csv(&quot;data_small/restaurant_df_2025_small.csv&quot;)</code></pre>
-<pre><code>## Rows: 84656 Columns: 8
+<pre><code>## Rows: 83612 Columns: 8
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (4): dba, boro, violation_description, grade
@@ -307,11 +306,19 @@ write_csv(restaurant_df, &quot;data_small/restaurant_df_2025_small.csv&quot;)</c
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code># Limit to only pizza joints
+pizza_df =
+  restaurant_df |&gt;
+  filter((str_detect(str_to_lower(dba), 
+                    &quot;pizza|pizzeria|slice&quot;)))</code></pre>
 <p>Our decision to use only 2025 data provides a current snapshot of rat
-sightings and restaurant inspections in NYC. This ensures relevance but
-means we cannot analyze longitudinal trends in rat populations, and some
-restaurants may be absent from our dataset if they weren’t inspected
-during this specific time period.</p>
+sightings and pizza restaurant inspections in NYC. This ensures
+relevance but means we cannot analyze longitudinal trends in rat
+populations, and some restaurants may be absent from our dataset if they
+weren’t inspected during this specific time period. Our search terms for
+pizza restuarants include “pizza”, “pizzeria”, and “slice”. Ideally this
+would cover all pizza joints but we recognize that some may fall under
+various other names!</p>
 </div>
 <div id="merge-summaries-by-zipcode" class="section level2">
 <h2>Merge Summaries by Zipcode</h2>
@@ -325,24 +332,24 @@ rat_summary &lt;- rat_df |&gt;
   summarise(ratreport_count = n(), .groups = &quot;drop&quot;)
 
 # Count restaurants per zipcode by grade
-restaurant_summary &lt;- restaurant_df |&gt;
+pizza_summary &lt;- pizza_df |&gt;
   group_by(zipcode) |&gt;
   summarise(
-    restaurant_count = n(),
-    grade_A = sum(grade == &quot;A&quot;, na.rm = TRUE),
-    grade_B = sum(grade == &quot;B&quot;, na.rm = TRUE),
-    grade_C = sum(grade == &quot;C&quot;, na.rm = TRUE)
+    pizzarestaurant_count = n(),
+    pizza_A = sum(grade == &quot;A&quot;, na.rm = TRUE),
+    pizza_B = sum(grade == &quot;B&quot;, na.rm = TRUE),
+    pizza_C = sum(grade == &quot;C&quot;, na.rm = TRUE)
   , .groups = &quot;drop&quot;)
 
 # Join
 zipcode_summary &lt;- rat_summary |&gt;
-  left_join(restaurant_summary, by = &quot;zipcode&quot;)</code></pre>
+  left_join(pizza_summary, by = &quot;zipcode&quot;)</code></pre>
 </div>
 <div id="regressing-rat-sightings-count-against-pizza-restaurant-count"
 class="section level2">
 <h2>Regressing Rat Sightings Count Against Pizza Restaurant Count</h2>
 <pre class="r"><code># Fitting a linear regression
-fit = lm(ratreport_count ~ restaurant_count, data = zipcode_summary)
+fit = lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
 
 # Examining the regression output
 fit |&gt; 
@@ -360,13 +367,13 @@ fit |&gt;
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">74.394</td>
-<td align="right">0</td>
+<td align="right">79.424</td>
+<td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">restaurant_count</td>
-<td align="right">0.064</td>
-<td align="right">0</td>
+<td align="left">pizzarestaurant_count</td>
+<td align="right">1.138</td>
+<td align="right">0.001</td>
 </tr>
 </tbody>
 </table>
@@ -384,8 +391,8 @@ fit |&gt;
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">0.068</td>
-<td align="right">0</td>
+<td align="right">0.067</td>
+<td align="right">0.001</td>
 </tr>
 </tbody>
 </table>
@@ -395,12 +402,12 @@ zipcode_summary |&gt;
   modelr::add_predictions(fit) |&gt; 
   ggplot(aes(x = pred, y = resid)) +
   geom_point() </code></pre>
-<pre><code>## Warning: Removed 2 rows containing missing values or values outside the scale range
+<pre><code>## Warning: Removed 24 rows containing missing values or values outside the scale range
 ## (`geom_point()`).</code></pre>
 <p><img src="Final-Code_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
 <pre class="r"><code># Plotting rat sightings count vs. restaurant count
 zipcode_summary |&gt; 
-  ggplot(aes(x = restaurant_count, y = ratreport_count)) +
+  ggplot(aes(x = pizzarestaurant_count, y = ratreport_count)) +
   geom_point() +
   geom_smooth(method = &quot;lm&quot;, se = TRUE) +
   labs(
@@ -409,8 +416,9 @@ zipcode_summary |&gt;
     title = &quot;Rat Sightings vs. Pizza Restaurants&quot;
  )</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<pre><code>## Warning: Removed 2 rows containing non-finite outside the scale range (`stat_smooth()`).
-## Removed 2 rows containing missing values or values outside the scale range
+<pre><code>## Warning: Removed 24 rows containing non-finite outside the scale range
+## (`stat_smooth()`).
+## Removed 24 rows containing missing values or values outside the scale range
 ## (`geom_point()`).</code></pre>
 <p><img src="Final-Code_files/figure-html/unnamed-chunk-4-2.png" width="90%" /></p>
 </div>
