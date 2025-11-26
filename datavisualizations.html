@@ -10,9 +10,8 @@
 
 
 
-<meta name="date" content="2025-11-21" />
 
-<title>Final Code</title>
+<title>Visualizing the Data</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -261,170 +260,12 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Final Code</h1>
-<h4 class="date">2025-11-21</h4>
+<h1 class="title toc-ignore">Visualizing the Data</h1>
 
 </div>
 
 
-<div id="import-datasets" class="section level2">
-<h2>Import Datasets</h2>
-<p>Please note for all those who use this… run once.</p>
-<pre class="r"><code>rat_df =
-read_csv(&quot;data_not_for_github/NYC_rats.csv&quot;) |&gt;
-janitor::clean_names() |&gt;
-mutate(created_date = ymd_hms(created_date)) |&gt;
-filter(year(created_date) == 2025) |&gt;
-  rename(zipcode = incident_zip) |&gt;
-  select(created_date, zipcode, borough, latitude, longitude, location_type)
 
-restaurant_df =
-read_csv(&quot;data_not_for_github/NYC_restaurant.csv&quot;) |&gt;
-janitor::clean_names() |&gt;
-mutate(inspection_date = mdy(inspection_date))   |&gt;
-filter(year(inspection_date) == 2025) |&gt;
-  select(dba, boro, zipcode, inspection_date, violation_description, grade, latitude, longitude)
-
-
-dir.create(&quot;data_small&quot;, showWarnings = FALSE)
-write_csv(rat_df, &quot;data_small/rat_df_2025_small.csv&quot;)
-write_csv(restaurant_df, &quot;data_small/restaurant_df_2025_small.csv&quot;)</code></pre>
-<pre class="r"><code>rat_df &lt;- read_csv(&quot;data_small/rat_df_2025_small.csv&quot;)</code></pre>
-<pre><code>## Rows: 18905 Columns: 6
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (2): borough, location_type
-## dbl  (3): zipcode, latitude, longitude
-## dttm (1): created_date
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>restaurant_df &lt;- read_csv(&quot;data_small/restaurant_df_2025_small.csv&quot;)</code></pre>
-<pre><code>## Rows: 83612 Columns: 8
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr  (4): dba, boro, violation_description, grade
-## dbl  (3): zipcode, latitude, longitude
-## date (1): inspection_date
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code># Limit to only pizza joints
-pizza_df =
-  restaurant_df |&gt;
-  filter((str_detect(str_to_lower(dba), 
-                    &quot;pizza|pizzeria|slice&quot;)))</code></pre>
-<p>Our decision to use only 2025 data provides a current snapshot of rat
-sightings and pizza restaurant inspections in NYC. This ensures
-relevance but means we cannot analyze longitudinal trends in rat
-populations, and some restaurants may be absent from our dataset if they
-weren’t inspected during this specific time period. Our search terms for
-pizza restuarants include “pizza”, “pizzeria”, and “slice”. Ideally this
-would cover all pizza joints but we recognize that some may fall under
-various other names!</p>
-</div>
-<div id="merge-summaries-by-zipcode" class="section level2">
-<h2>Merge Summaries by Zipcode</h2>
-<p>Note that we can run our analyses without doing this, but this
-simplifies our data down to just counts by zipcode.THIS DOES NOT INCLUDE
-LAT AND LONG….for mapping purposes may need to use individual datasets
-above!</p>
-<pre class="r"><code># Count rats per zipcode
-rat_summary &lt;- rat_df |&gt;
-  group_by(zipcode) |&gt;
-  summarise(ratreport_count = n(), .groups = &quot;drop&quot;)
-
-# Count restaurants per zipcode by grade
-pizza_summary &lt;- pizza_df |&gt;
-  group_by(zipcode) |&gt;
-  summarise(
-    pizzarestaurant_count = n(),
-    pizza_A = sum(grade == &quot;A&quot;, na.rm = TRUE),
-    pizza_B = sum(grade == &quot;B&quot;, na.rm = TRUE),
-    pizza_C = sum(grade == &quot;C&quot;, na.rm = TRUE)
-  , .groups = &quot;drop&quot;)
-
-# Join
-zipcode_summary &lt;- rat_summary |&gt;
-  left_join(pizza_summary, by = &quot;zipcode&quot;)</code></pre>
-</div>
-<div id="regressing-rat-sightings-count-against-pizza-restaurant-count"
-class="section level2">
-<h2>Regressing Rat Sightings Count Against Pizza Restaurant Count</h2>
-<pre class="r"><code># Fitting a linear regression
-fit = lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
-
-# Examining the regression output
-fit |&gt; 
-  broom::tidy() |&gt; 
-  select(term, estimate, p.value) |&gt; 
-  knitr::kable(digits = 3)</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">term</th>
-<th align="right">estimate</th>
-<th align="right">p.value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">(Intercept)</td>
-<td align="right">79.424</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">pizzarestaurant_count</td>
-<td align="right">1.138</td>
-<td align="right">0.001</td>
-</tr>
-</tbody>
-</table>
-<pre class="r"><code># Obtaining r-squared, p-value
-fit |&gt; 
-  broom::glance() |&gt; 
-  select(r.squared, p.value) |&gt; 
-  knitr::kable(digits = 3)</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="right">r.squared</th>
-<th align="right">p.value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">0.067</td>
-<td align="right">0.001</td>
-</tr>
-</tbody>
-</table>
-<pre class="r"><code># Looking at the residuals vs. fitted values
-zipcode_summary |&gt; 
-  modelr::add_residuals(fit) |&gt; 
-  modelr::add_predictions(fit) |&gt; 
-  ggplot(aes(x = pred, y = resid)) +
-  geom_point() </code></pre>
-<pre><code>## Warning: Removed 24 rows containing missing values or values outside the scale range
-## (`geom_point()`).</code></pre>
-<p><img src="Final-Code_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
-<pre class="r"><code># Plotting rat sightings count vs. restaurant count
-zipcode_summary |&gt; 
-  ggplot(aes(x = pizzarestaurant_count, y = ratreport_count)) +
-  geom_point() +
-  geom_smooth(method = &quot;lm&quot;, se = TRUE) +
-  labs(
-    x = &quot;# Pizza Restaurants&quot;,
-    y = &quot;# Rat Sighting Reports&quot;,
-    title = &quot;Rat Sightings vs. Pizza Restaurants&quot;
- )</code></pre>
-<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<pre><code>## Warning: Removed 24 rows containing non-finite outside the scale range
-## (`stat_smooth()`).
-## Removed 24 rows containing missing values or values outside the scale range
-## (`geom_point()`).</code></pre>
-<p><img src="Final-Code_files/figure-html/unnamed-chunk-4-2.png" width="90%" /></p>
-</div>
 
 
 
