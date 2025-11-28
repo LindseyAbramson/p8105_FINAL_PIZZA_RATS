@@ -1,5 +1,263 @@
 ---
 title: "Visualizing the Data"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: darkly
 ---
 
+
+```{r setup, include=FALSE}
+
+
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(haven)
+library(glmnet)
+library(sf)
+library(RColorBrewer)
+library(classInt)
+library(ggspatial)
+library(ggrepel)
+library(patchwork)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+## Heatmaps
+
+```{r loading and merging data, include = FALSE}
+
+# Zip code shapefile
+zip_nyc =
+  st_read("maps/MODZCTA_2010.shp") |> 
+  rename(zipcode = MODZCTA) |> 
+  select(zipcode, geometry)
+
+# Basic plot
+ggplot() +
+  geom_sf(data = zip_nyc)
+
+# NYC boundary
+NYC <- st_union(zip_nyc)
+
+# Loading rat and restaurant data
+zipcode_summary <- read_csv("data_small/zipcode_summary.csv") |> 
+  mutate(
+    zipcode = as.character(zipcode)
+  )
+
+# Joining rat and restaurant data with shapefile
+nyc_rat_pizza =
+  zip_nyc |> 
+  left_join(zipcode_summary, by = "zipcode")
+
+```
+
+```{r Rat map, include = FALSE}
+# Rat count base map
+ggplot() +
+  geom_sf(
+    data = nyc_rat_pizza,
+    aes(fill = ratreport_count),
+    color = "black",
+    linewidth = .2
+  ) 
+
+
+# Select color palette and our breaks: 
+display.brewer.all(type = "seq")
+
+# Examine distribution to figure out how to categorize data
+nyc_rat_pizza |> 
+  ggplot(aes(x = ratreport_count)) +
+  geom_histogram()
+
+# Right skewed so using natural break jenks
+breaks_rat <- classIntervals(nyc_rat_pizza$ratreport_count, n = 5, style = "jenks")$brks
+print(breaks_rat)
+
+# Formatted Rat Plot
+ggplot() +
+  geom_sf(
+    data = nyc_rat_pizza,
+    aes(fill = ratreport_count),
+    color = "white",
+    linewidth = .4
+  )  +
+  scale_fill_fermenter(
+    direction = 1,
+    palette = "Greens",
+    breaks = breaks_rat
+  ) +
+  geom_sf(
+    data = NYC,
+    fill = NA,
+    color = "black",
+    linewidth = 0.4
+  ) +
+ geom_sf_label(
+  data = nyc_rat_pizza |> 
+    slice_max(ratreport_count, n = 10) |> 
+    st_centroid(),
+  aes(label = zipcode),
+  size = 1.5,
+  color = "black",
+  fill = scales::alpha("white", 0.5),  
+  label.size = 0,                      
+  label.padding = unit(0.15, "lines")
+) +
+  labs(                                # add title and subtitle 
+    title = "Number of Rat Sightings in New York City, 2025",
+    subtitle = "Sightings as of November 2025", 
+    fill = "Number of Sightings"
+  ) +
+  theme_void() +
+  theme(                               # title and subtitle format
+    plot.title = element_text( 
+      size = 13,
+      family  = "sans",
+      vjust = -5,
+      hjust = 0.10
+    ),
+    plot.subtitle = element_text(
+      face = "italic",
+      margin = margin(t = 22)
+    ),
+    legend.title = element_text(size = 10),
+    legend.position = "inside",
+    legend.position.inside = c(0.2, 0.7),
+    legend.key.size = unit(.4, 'cm')
+  )  +
+  annotation_scale(                   # add a scale bar
+    style = "ticks",   
+    pad_x = unit(1.4, "in"),
+    pad_y = unit(.3, "in"),
+    unit_category = "imperial"
+  ) +
+  annotation_north_arrow(             # add a north arrow
+    height = unit(.8, "cm"),
+    width = unit(1, "cm"),
+    pad_x = unit(1, "in"), 
+    pad_y = unit(0.2, "in"),
+    style = north_arrow_minimal 
+    )  -> map_rat
+```
+
+
+```{r restaurant map, include = FALSE}
+# Pizza count base map
+ggplot() +
+  geom_sf(
+    data = nyc_rat_pizza,
+    aes(fill = pizzarestaurant_count),
+    color = "black",
+    linewidth = .2
+  ) 
+
+
+# Select color palette and our breaks: 
+display.brewer.all(type = "seq")
+
+# Examine distribution to figure out how to categorize data
+nyc_rat_pizza |> 
+  ggplot(aes(x = pizzarestaurant_count)) +
+  geom_histogram()
+
+# Right skewed so using natural break jenks
+breaks_pizza <- classIntervals(nyc_rat_pizza$pizzarestaurant_count, n = 5, style = "jenks")$brks
+print(breaks_pizza)
+
+# Formatted Rat Plot
+ggplot() +
+  geom_sf(
+    data = nyc_rat_pizza,
+    aes(fill = pizzarestaurant_count),
+    color = "white",
+    linewidth = .4
+  )  +
+  scale_fill_fermenter(
+    direction = 1,
+    palette = "Reds",
+    breaks = breaks_pizza
+  ) +
+  geom_sf(
+    data = NYC,
+    fill = NA,
+    color = "black",
+    linewidth = 0.4
+  ) + 
+  geom_sf_label(
+  data = nyc_rat_pizza |> 
+    slice_max(pizzarestaurant_count, n = 10) |> 
+    st_centroid(),
+  aes(label = zipcode),
+  size = 1.5,
+  color = "black",
+  fill = scales::alpha("white", 0.5),  
+  label.size = 0,                      
+  label.padding = unit(0.15, "lines")
+  ) +
+  labs(                                # add title and subtitle 
+    title = "Number of Pizza Restaurants in New York City by Zipcode, 2025",
+    subtitle = "Includes by-the-slice and sit-down pizza restuarants", 
+    fill = "Number of Pizza Restaurants"
+  ) +
+  theme_void() +
+  theme(                               # title and subtitle format
+    plot.title = element_text( 
+      size = 13,
+      family  = "sans",
+      vjust = -5,
+      hjust = 0.10
+    ),
+    plot.subtitle = element_text(
+      face = "italic",
+      margin = margin(t = 22)
+    ),
+    legend.title = element_text(size = 10),
+    legend.position = "inside",
+    legend.position.inside = c(0.2, 0.7),
+    legend.key.size = unit(.4, 'cm')
+  )  +
+  annotation_scale(                   # add a scale bar
+    style = "ticks",   
+    pad_x = unit(1.4, "in"),
+    pad_y = unit(.3, "in"),
+    unit_category = "imperial"
+  ) +
+  annotation_north_arrow(             # add a north arrow
+    height = unit(.8, "cm"),
+    width = unit(1, "cm"),
+    pad_x = unit(1, "in"), 
+    pad_y = unit(0.2, "in"),
+    style = north_arrow_minimal 
+    )  -> map_pizza
+```
+
+
+The maps show the spatial distribution of rat sightings and pizza restaurants. We see that most rat sightings have occurred... 
+
+```{r Joining the maps, fig.width = 12, fig.height = 8, echo = FALSE}
+
+map_rat + map_pizza -> combined_plot
+print(combined_plot)
+
+```

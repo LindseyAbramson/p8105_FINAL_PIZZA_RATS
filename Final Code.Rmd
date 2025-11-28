@@ -5,6 +5,12 @@ date: "2025-11-21"
 ---
 
 ```{r setup, include=FALSE}
+
+install.packages("sf")           # gis package
+install.packages("RColorBrewer") # color palettes
+install.packages("classInt")     # creates breaks in the distribution
+install.packages("ggspatial")    # scale bars and north arrows
+
 library(tidyverse)
 library(dplyr)
 library(readxl)
@@ -88,6 +94,9 @@ pizza_summary <- pizza_df |>
 # Join
 zipcode_summary <- rat_summary |>
   left_join(pizza_summary, by = "zipcode")
+
+# Saving zipcode_summary to directory
+write_csv(zipcode_summary, "data_small/zipcode_summary.csv")
 ```
 
 ## Regressing Rat Sightings Count Against Pizza Restaurant Count
