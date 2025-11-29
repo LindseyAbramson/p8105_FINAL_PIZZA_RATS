@@ -5,8 +5,11 @@ navbar:
   right:
     - text: "Our Code"
       href: Final-Code.html
-    - text: "Visualizations"
+    - text: "Heat Maps"
       href: datavisualizations.html
+    - text: "Plots"
+      href: plotlyfinal.html
+      
 output:
   html_document:
     theme: darkly
