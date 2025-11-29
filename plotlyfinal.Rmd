@@ -51,6 +51,22 @@ zipcode_summary <- read_csv("data_small/zipcode_summary.csv") |>
 ```
 
 ```{r interactive-scatter, message=FALSE, warning=FALSE, echo=FALSE}
+# Fit the model
+fit <- lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
+
+# Create predicted values for a smooth regression line
+regline_df <- tibble(
+  pizzarestaurant_count = seq(
+    min(zipcode_summary$pizzarestaurant_count, na.rm = TRUE),
+    max(zipcode_summary$pizzarestaurant_count, na.rm = TRUE),
+    length.out = 200
+  )
+) |>
+  mutate(
+    pred = predict(fit, newdata = cur_data_all())
+  )
+
+# Base scatterplot
 p =
   zipcode_summary |>
   ggplot(aes(
@@ -64,7 +80,17 @@ p =
     )
   )) +
   geom_point(size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  # Add the regression line manually
+  geom_line(
+    data = regline_df,
+    aes(
+      x = pizzarestaurant_count,
+      y = pred
+    ),
+    inherit.aes = FALSE,
+    color = "black",
+    linewidth = 1
+  ) +
   scale_color_viridis_c(option = "plasma") +
   labs(
     title = "Rat Sightings vs Pizza Restaurants by Zipcode",
@@ -113,13 +139,20 @@ zipcode_summary |>
 This bar chart shows the ten zipcodes with the highest number of pizza restaurants. These areas often have dense food activity and heavy foot traffic. When compared with the rat sightings chart, it becomes clear that zipcodes with many pizza restaurants do not always have the highest rat activity. This supports the idea that pizza restaurant density is not a strong predictor of rat reports across zipcodes.
 
 ```{r regression-line-only-interactive, message=FALSE, warning=FALSE, echo=FALSE}
-# Build the static ggplot
+# Fit the model
+fit <- lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
+
+# Get R squared
+r2_value <- summary(fit)$r.squared
+r2_label <- paste0("R squared: ", round(r2_value, 3))
+
+# Build the static ggplot with R squared in the title
 p_regline =
   zipcode_summary |>
   ggplot(aes(x = pizzarestaurant_count, y = ratreport_count)) +
   geom_smooth(method = "lm", se = TRUE, color = "darkblue") +
   labs(
-    title = "Regression Line: Rat Sightings vs Pizza Restaurants",
+    title = paste("Regression Line: Rat Sightings vs Pizza Restaurants", "\n", r2_label),
     x = "# Pizza Restaurants",
     y = "Predicted Rat Sighting Reports"
   ) +
@@ -129,7 +162,7 @@ p_regline =
 plotly::ggplotly(p_regline)
 ```
 
-This plot shows the estimated linear relationship between the number of pizza restaurants in a zipcode and the predicted number of rat sightings. The line slopes upward, which suggests a small positive association. The confidence band is wide, which shows that there is a lot of uncertainty around the predicted values. This means pizza restaurant count alone does not explain much of the variation in rat sightings across the city.
+This plot shows the estimated linear relationship between the number of pizza restaurants in a zipcode and the predicted number of rat sightings. The line slopes upward, which suggests a small positive association. The confidence band is wide, which shows that there is a lot of uncertainty around the predicted values. This means pizza restaurant count alone does not explain much of the variation in rat sightings across the city. The R squared value of 0.07 means that the number of pizza restaurants in these zipcodes explains only about seven percent of the variation in rat sighting reports. This shows that the relationship between these two variables is very weak. While there is a small positive trend, most of the differences in rat activity across zipcodes are due to other factors that are not included in this model.
 
 
 
