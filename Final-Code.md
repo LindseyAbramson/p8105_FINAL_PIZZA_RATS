@@ -33,7 +33,7 @@ rat_df <- read_csv("data_small/rat_df_2025_small.csv")
 ```
 
     ## Rows: 18978 Columns: 6
-    ## ── Column specification ──────────────────────────────────
+    ## ── Column specification ───────
     ## Delimiter: ","
     ## chr  (2): borough, location_type
     ## dbl  (3): zipcode, latitude, longitude
@@ -47,7 +47,7 @@ restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
 ```
 
     ## Rows: 84603 Columns: 8
-    ## ── Column specification ──────────────────────────────────
+    ## ── Column specification ───────
     ## Delimiter: ","
     ## chr  (4): dba, boro, violation_description, grade
     ## dbl  (3): zipcode, latitude, longitude
@@ -143,8 +143,10 @@ zipcode_summary |>
   geom_point() 
 ```
 
-    ## Warning: Removed 24 rows containing missing values or values
-    ## outside the scale range (`geom_point()`).
+    ## Warning: Removed 24 rows containing
+    ## missing values or values
+    ## outside the scale range
+    ## (`geom_point()`).
 
 <img src="Final-Code_files/figure-gfm/unnamed-chunk-4-1.png" width="90%" />
 
@@ -161,11 +163,15 @@ zipcode_summary |>
  )
 ```
 
-    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula
+    ## = 'y ~ x'
 
-    ## Warning: Removed 24 rows containing non-finite outside the scale
+    ## Warning: Removed 24 rows containing
+    ## non-finite outside the scale
     ## range (`stat_smooth()`).
-    ## Removed 24 rows containing missing values or values
-    ## outside the scale range (`geom_point()`).
+    ## Removed 24 rows containing
+    ## missing values or values
+    ## outside the scale range
+    ## (`geom_point()`).
 
 <img src="Final-Code_files/figure-gfm/unnamed-chunk-4-2.png" width="90%" />
