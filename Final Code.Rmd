@@ -1,10 +1,10 @@
 ---
 title: "Final Code"
-output: github_document
+output: html_document
 date: "2025-11-21"
 ---
 
-```{r setup, include=FALSE}
+```{r setup, eval = FALSE}
 
 install.packages("sf")           # gis package
 install.packages("RColorBrewer") # color palettes
@@ -59,7 +59,7 @@ write_csv(rat_df, "data_small/rat_df_2025_small.csv")
 write_csv(restaurant_df, "data_small/restaurant_df_2025_small.csv")
 ```
 
-```{r}
+```{r, eval = FALSE}
 rat_df <- read_csv("data_small/rat_df_2025_small.csv")
 restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
 
@@ -75,7 +75,7 @@ Our decision to use only 2025 data provides a current snapshot of rat sightings 
 
 ## Merge Summaries by Zipcode
 Note that we can run our analyses without doing this, but this simplifies our data down to just counts by zipcode.THIS DOES NOT INCLUDE LAT AND LONG....for mapping purposes may need to use individual datasets above!
-```{r}
+```{r, eval = FALSE}
 # Count rats per zipcode
 rat_summary <- rat_df |>
   group_by(zipcode) |>
@@ -101,7 +101,7 @@ write_csv(zipcode_summary, "data_small/zipcode_summary.csv")
 
 ## Regressing Rat Sightings Count Against Pizza Restaurant Count
 
-```{r}
+```{r, eval = FALSE}
 # Fitting a linear regression
 fit = lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
 
@@ -135,5 +135,409 @@ zipcode_summary |>
     title = "Rat Sightings vs. Pizza Restaurants"
  )
 ```
+
+
+## Heat Maps Code
+
+
+```{r setup 2, include=FALSE}
+
+
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(haven)
+library(glmnet)
+library(sf)
+library(RColorBrewer)
+library(classInt)
+library(ggspatial)
+library(ggrepel)
+library(patchwork)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+First I load the relevant datasets, and load a blank shapefile with NYC zipcodes. 
+
+```{r loading and merging data, eval = FALSE}
+
+# Zip code shapefile
+zip_nyc =
+  st_read("maps/MODZCTA_2010.shp") |> 
+  rename(zipcode = MODZCTA) |> 
+  select(zipcode, geometry)
+
+# Basic plot
+ggplot() +
+  geom_sf(data = zip_nyc)
+
+# Dissolving shapefile for just NYC boundary
+NYC <- st_union(zip_nyc)
+
+# Loading rat and restaurant data
+zipcode_summary <- read_csv("data_small/zipcode_summary.csv") |> 
+  mutate(
+    zipcode = as.character(zipcode)
+  )
+
+# Joining rat and restaurant data with shapefile. Now, I have one file with the geometries for the map, and rat and pizza count data.
+nyc_rat_pizza =
+  zip_nyc |> 
+  left_join(zipcode_summary, by = "zipcode")
+
+```
+
+Next, I create the heatmap for rat sightings. 
+```{r Rat map, eval = FALSE}
+# Rat count base map
+ggplot() +
+  geom_sf(
+    data = nyc_rat_pizza,
+    aes(fill = ratreport_count),
+    color = "black",
+    linewidth = .2
+  ) 
+
+
+# Looking at the different color palette options 
+display.brewer.all(type = "seq")
+
+# Examining distribution to figure out how to categorize data
+nyc_rat_pizza |> 
+  ggplot(aes(x = ratreport_count)) +
+  geom_histogram()
+
+# Right skewed data so using natural break jenks as opposed to quantiles
+breaks_rat <- classIntervals(nyc_rat_pizza$ratreport_count, n = 5, style = "jenks")$brks
+print(breaks_rat)
+
+# Formatted Rat Map
+ggplot() +
+  geom_sf(                            # setting rat counts as my fill             
+    data = nyc_rat_pizza,
+    aes(fill = ratreport_count),
+    color = "white",
+    linewidth = .05
+  )  +
+  scale_fill_fermenter(               # indicating the color palette for the rat sightings map
+    direction = 1,
+    palette = "Greens",
+    breaks = breaks_rat
+  ) +
+  geom_sf(                            # adding a thin black outline around map
+    data = NYC,
+    fill = NA,
+    color = "black",
+    linewidth = 0.03
+  ) +
+  labs(                                # adding title and subtitle 
+    title = "Number of Rat Sightings in \nNew York City by Zipcode, 2025",
+    subtitle = "Sightings as of November 2025", 
+    fill = "Number of Sightings"
+  ) +
+  theme_void() +
+  theme(                             # title and subtitle formatting and placement
+    plot.title = element_text(face = "bold", size = 13, family = "sans", vjust = -20),
+    plot.subtitle = element_text(face = "italic", size = 11, vjust = -3.5),
+    legend.title = element_text(size = 10),
+    legend.position = "inside",
+    legend.position.inside = c(0.2, 0.6),
+    legend.key.size = unit(.4, 'cm'),
+    plot.margin = margin(0, 0, 0, 0),        
+    panel.spacing = unit(0, "pt")            
+  ) + 
+  annotation_scale(                   # adding a scale bar
+    style = "ticks",   
+    pad_x = unit(1.4, "in"),
+    pad_y = unit(.3, "in"),
+    unit_category = "imperial"
+  ) +
+  annotation_north_arrow(             # adding a north arrow
+    height = unit(.8, "cm"),
+    width = unit(1, "cm"),
+    pad_x = unit(1, "in"), 
+    pad_y = unit(0.2, "in"),
+    style = north_arrow_minimal 
+    )  -> map_rat
+```
+
+Here I create a heatmap for pizza restaurant counts per zipcode. 
+```{r restaurant map, eval = FALSE}
+# Pizza count base map
+ggplot() +
+  geom_sf(
+    data = nyc_rat_pizza,
+    aes(fill = pizzarestaurant_count),
+    color = "black",
+    linewidth = .2
+  ) 
+
+
+# Select color palette and our breaks: 
+display.brewer.all(type = "seq")
+
+# Examine distribution to figure out how to categorize data
+nyc_rat_pizza |> 
+  ggplot(aes(x = pizzarestaurant_count)) +
+  geom_histogram()
+
+# Right skewed so using natural break jenks
+breaks_pizza <- classIntervals(nyc_rat_pizza$pizzarestaurant_count, n = 5, style = "jenks")$brks
+print(breaks_pizza)
+
+# Formatted Pizza Map
+ggplot() +
+  geom_sf(                              # setting pizza counts as my fill
+    data = nyc_rat_pizza,
+    aes(fill = pizzarestaurant_count),
+    color = "white",
+    linewidth = .05
+  )  +
+  scale_fill_fermenter(                # indicating color palette
+    direction = 1,
+    palette = "Reds",
+    breaks = breaks_pizza
+  ) +
+  geom_sf(                             # adding black border around map
+    data = NYC,
+    fill = NA,
+    color = "black",
+    linewidth = 0.03
+  )  +
+  labs(                                # adding title and subtitle 
+    title = "Number of Pizza Restaurants \nin New York City by Zipcode, 2025",
+    subtitle = "Includes by-the-slice and\nsit-down pizza restuarants", 
+    fill = "Number of Pizza Restaurants"
+  ) +
+  theme_void() +
+  theme(                              # formatting and placement of title, subtitle, legend
+    plot.title = element_text(face = "bold", size = 13, family = "sans", vjust = -20),
+    plot.subtitle = element_text(face = "italic", size = 11, vjust = -25),
+    legend.title = element_text(size = 10),
+    legend.position = "inside",
+    legend.position.inside = c(0.2, 0.6),
+    legend.key.size = unit(.4, 'cm'),
+    plot.margin = margin(0, 0, 0, 0),        
+    panel.spacing = unit(0, "pt")            
+  ) +
+  annotation_scale(                   # adding a scale bar
+    style = "ticks",   
+    pad_x = unit(1.4, "in"),
+    pad_y = unit(.3, "in"),
+    unit_category = "imperial"
+  ) +
+  annotation_north_arrow(             # adding a north arrow
+    height = unit(.8, "cm"),
+    width = unit(1, "cm"),
+    pad_x = unit(1, "in"), 
+    pad_y = unit(0.2, "in"),
+    style = north_arrow_minimal 
+    )  -> map_pizza
+```
+
+I join the two heatmaps and save as a combined map. 
+```{r Joining the maps, fig.width=10, fig.height=12, eval= FALSE}
+
+# combining both maps to view side by side
+map_rat + map_pizza -> combined_plot
+print(combined_plot)
+
+# saving the combined map
+ggsave(
+  "datavisualizations_files/nyc_maps.png", combined_plot,width = 12, height = 7,   
+  dpi = 320, bg = "white"
+)
+
+
+```
+
+```{r presenting the map, eval = FALSE, out.width='120%'}
+
+# presenting map
+knitr::include_graphics("datavisualizations_files/nyc_maps.png")
+
+```
+
+
+
+## Plots Code
+
+
+
+<style>
+h1.title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  margin-top: 20px;
+}
+</style>
+
+<style>
+h1.title, h3.subtitle {
+  text-align: center;
+}
+</style>
+
+```{r setup 3, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(haven)
+library(glmnet)
+library(plotly)      
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete <- scale_colour_viridis_d
+scale_fill_discrete   <- scale_fill_viridis_d
+
+# Loading rat and restaurant data
+zipcode_summary <- read_csv("data_small/zipcode_summary.csv") |> 
+  mutate(
+    zipcode = as.character(zipcode)
+  )
+```
+
+```{r interactive-scatter, message=FALSE, warning=FALSE,  eval = FALSE}
+# Fit the model
+fit <- lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
+
+# Create predicted values for a smooth regression line
+regline_df <- tibble(
+  pizzarestaurant_count = seq(
+    min(zipcode_summary$pizzarestaurant_count, na.rm = TRUE),
+    max(zipcode_summary$pizzarestaurant_count, na.rm = TRUE),
+    length.out = 200
+  )
+) |>
+  mutate(
+    pred = predict(fit, newdata = cur_data_all())
+  )
+
+# Base scatterplot
+p =
+  zipcode_summary |>
+  ggplot(aes(
+    x = pizzarestaurant_count,
+    y = ratreport_count,
+    color = ratreport_count,
+    text = paste0(
+      "Zipcode: ", zipcode, "<br>",
+      "Rat reports: ", ratreport_count, "<br>",
+      "Pizza restaurants: ", pizzarestaurant_count
+    )
+  )) +
+  geom_point(size = 2, alpha = 0.8) +
+  # Add the regression line manually
+  geom_line(
+    data = regline_df,
+    aes(
+      x = pizzarestaurant_count,
+      y = pred
+    ),
+    inherit.aes = FALSE,
+    color = "black",
+    linewidth = 1
+  ) +
+  scale_color_viridis_c(option = "plasma") +
+  labs(
+    title = "Rat Sightings vs Pizza Restaurants by Zipcode",
+    x = "# Pizza Restaurants",
+    y = "# Rat Sighting Reports",
+    color = "Rat Count"
+  ) +
+  theme_minimal()
+
+plotly::ggplotly(p, tooltip = "text")
+```
+
+This scatterplot displays the relationship between pizza restaurant count and rat sightings for every zipcode. Each point represents one zipcode, and the color indicates the number of rat reports. Most points cluster at lower values for both variables, while a few zipcodes show very high rat activity. The wide spread of the points shows that the relationship is weak and that many other factors likely contribute to rat sightings.
+
+```{r top10-rats, message=FALSE, warning=FALSE, eval = FALSE}
+zipcode_summary |>
+  slice_max(ratreport_count, n = 10) |>
+  ggplot(aes(x = reorder(zipcode, ratreport_count), y = ratreport_count)) +
+  geom_col(fill = "firebrick", alpha = 0.85) +
+  coord_flip() +
+  labs(
+    title = "Top 10 Zipcodes with Highest Rat Sightings",
+    x = "Zipcode",
+    y = "Rat Sighting Reports"
+  ) +
+  theme_minimal()
+```
+
+This bar chart highlights the ten zipcodes with the highest number of rat sightings. A few locations stand out with much higher counts than the rest of the city. These areas may have environmental or structural conditions that support larger rat populations. This chart helps identify where rat issues are most concentrated.
+
+```{r top10-pizza, message=FALSE, warning=FALSE,  eval = FALSE}
+zipcode_summary |> 
+  slice_max(pizzarestaurant_count, n = 10) |> 
+  ggplot(aes(x = reorder(zipcode, pizzarestaurant_count),
+             y = pizzarestaurant_count)) +
+  geom_col(fill = "orange", alpha = 0.9) +
+  coord_flip() +
+  labs(
+    title = "Top 10 Zipcodes with Most Pizza Restaurants",
+    x = "Zipcode",
+    y = "# Pizza Restaurants"
+  ) +
+  theme_minimal()
+```
+
+This bar chart shows the ten zipcodes with the highest number of pizza restaurants. These areas often have dense food activity and heavy foot traffic. When compared with the rat sightings chart, it becomes clear that zipcodes with many pizza restaurants do not always have the highest rat activity. This supports the idea that pizza restaurant density is not a strong predictor of rat reports across zipcodes.
+
+```{r regression-line-only-interactive, message=FALSE, warning=FALSE,  eval = FALSE}
+# Fit the model
+fit <- lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
+
+# Get R squared
+r2_value <- summary(fit)$r.squared
+r2_label <- paste0("R squared: ", round(r2_value, 3))
+
+# Build the static ggplot with R squared in the title
+p_regline =
+  zipcode_summary |>
+  ggplot(aes(x = pizzarestaurant_count, y = ratreport_count)) +
+  geom_smooth(method = "lm", se = TRUE, color = "darkblue") +
+  labs(
+    title = paste("Regression Line: Rat Sightings vs Pizza Restaurants", "\n", r2_label),
+    x = "# Pizza Restaurants",
+    y = "Predicted Rat Sighting Reports"
+  ) +
+  theme_minimal()
+
+# Convert to interactive plotly
+plotly::ggplotly(p_regline)
+```
+
+This plot shows the estimated linear relationship between the number of pizza restaurants in a zipcode and the predicted number of rat sightings. The line slopes upward, which suggests a small positive association. The confidence band is wide, which shows that there is a lot of uncertainty around the predicted values. This means pizza restaurant count alone does not explain much of the variation in rat sightings across the city. The R squared value of 0.07 means that the number of pizza restaurants in these zipcodes explains only about seven percent of the variation in rat sighting reports. This shows that the relationship between these two variables is very weak. While there is a small positive trend, most of the differences in rat activity across zipcodes are due to other factors that are not included in this model.
 
 
