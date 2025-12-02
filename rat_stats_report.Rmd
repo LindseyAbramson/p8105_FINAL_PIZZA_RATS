@@ -3,15 +3,24 @@ title: "Rat Stats Report"
 output: html_document
 ---
 
+
 ## Motivation
 
 Our research team was motivated by the intense desire to understand the gustatory preferences of our NYC rodent counterparts. With a wealth of publicly available data, we endeavored to take a deep delve into the association between prevalence of pizza restaurants and frequency of rat sightings across zipcodes in New York City.
 
+
 ## Related Work
+
+
 
 ## Initial Questions
 
+
+
+
 ## Data
+
+
 
 ## Exploratory Analysis
 

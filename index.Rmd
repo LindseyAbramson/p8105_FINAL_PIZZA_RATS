@@ -1,13 +1,11 @@
 ---
-title: "NYC Pizza Rats"
+title: "RatStats: Data by the Slice"
 output: 
   html_document:
     toc: true
     toc_float: true
     theme: darkly
 ---
-
-# RatStats: Data by the Slice
 
 **Do the rats of New York City crave the unctuous, cheesy, saucy, crusty delight that draws tourists from around the world to the Big Apple—the unrivaled, saliva-inducing culinary masterpiece that is pizza?**
 
