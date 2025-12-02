@@ -1,0 +1,25 @@
+---
+title: "Rat Stats Report"
+output: html_document
+---
+
+## Motivation
+
+Our research team was motivated by the intense desire to understand the gustatory preferences of our NYC rodent counterparts. With a wealth of publicly available data, we endeavored to take a deep delve into the association between prevalence of pizza restaurants and frequency of rat sightings across zipcodes in New York City.
+
+## Related Work
+
+## Initial Questions
+
+## Data
+
+## Exploratory Analysis
+
+Visually exploring the distribution of rat sightings and pizza restaurants across zipcodes using heat maps, we see an inconsistent spatial relationship between areas with a high density of both pizza serving establishments and rats. These visual ques were early indicators that where NYC rats choose to spend their leisure time may be more accurately predicted by factors other than access to cheesy, saucy confections.
+
+## Additional analysis
+
+We analyzed the relationship between pizza restaurant count and number of rat sightings using linear regression.
+
+## Discussion
+
