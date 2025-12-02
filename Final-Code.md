@@ -4,8 +4,7 @@ Final Code
 
 ## Import Datasets
 
-Please note for all those who use this… run once and only once. Then add
-back in the \# to comment this chunk out.
+Please note for all those who use this… run once.
 
 ``` r
 rat_df =
@@ -33,8 +32,8 @@ write_csv(restaurant_df, "data_small/restaurant_df_2025_small.csv")
 rat_df <- read_csv("data_small/rat_df_2025_small.csv")
 ```
 
-    ## Rows: 18905 Columns: 6
-    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Rows: 18978 Columns: 6
+    ## ── Column specification ───────
     ## Delimiter: ","
     ## chr  (2): borough, location_type
     ## dbl  (3): zipcode, latitude, longitude
@@ -47,8 +46,8 @@ rat_df <- read_csv("data_small/rat_df_2025_small.csv")
 restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
 ```
 
-    ## Rows: 83612 Columns: 8
-    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Rows: 84603 Columns: 8
+    ## ── Column specification ───────
     ## Delimiter: ","
     ## chr  (4): dba, boro, violation_description, grade
     ## dbl  (3): zipcode, latitude, longitude
@@ -57,11 +56,22 @@ restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
     ## ℹ Use `spec()` to retrieve the full column specification for this data.
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
+``` r
+# Limit to only pizza joints
+pizza_df =
+  restaurant_df |>
+  filter((str_detect(str_to_lower(dba), 
+                    "pizza|pizzeria|slice")))
+```
+
 Our decision to use only 2025 data provides a current snapshot of rat
-sightings and restaurant inspections in NYC. This ensures relevance but
-means we cannot analyze longitudinal trends in rat populations, and some
-restaurants may be absent from our dataset if they weren’t inspected
-during this specific time period.
+sightings and pizza restaurant inspections in NYC. This ensures
+relevance but means we cannot analyze longitudinal trends in rat
+populations, and some restaurants may be absent from our dataset if they
+weren’t inspected during this specific time period. Our search terms for
+pizza restuarants include “pizza”, “pizzeria”, and “slice”. Ideally this
+would cover all pizza joints but we recognize that some may fall under
+various other names!
 
 ## Merge Summaries by Zipcode
 
@@ -77,16 +87,91 @@ rat_summary <- rat_df |>
   summarise(ratreport_count = n(), .groups = "drop")
 
 # Count restaurants per zipcode by grade
-restaurant_summary <- restaurant_df |>
+pizza_summary <- pizza_df |>
   group_by(zipcode) |>
   summarise(
-    restaurant_count = n(),
-    grade_A = sum(grade == "A", na.rm = TRUE),
-    grade_B = sum(grade == "B", na.rm = TRUE),
-    grade_C = sum(grade == "C", na.rm = TRUE)
+    pizzarestaurant_count = n(),
+    pizza_A = sum(grade == "A", na.rm = TRUE),
+    pizza_B = sum(grade == "B", na.rm = TRUE),
+    pizza_C = sum(grade == "C", na.rm = TRUE)
   , .groups = "drop")
 
 # Join
 zipcode_summary <- rat_summary |>
-  left_join(restaurant_summary, by = "zipcode")
+  left_join(pizza_summary, by = "zipcode")
+
+# Saving zipcode_summary to directory
+write_csv(zipcode_summary, "data_small/zipcode_summary.csv")
 ```
+
+## Regressing Rat Sightings Count Against Pizza Restaurant Count
+
+``` r
+# Fitting a linear regression
+fit = lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
+
+# Examining the regression output
+fit |> 
+  broom::tidy() |> 
+  select(term, estimate, p.value) |> 
+  knitr::kable(digits = 3)
+```
+
+| term                  | estimate | p.value |
+|:----------------------|---------:|--------:|
+| (Intercept)           |   78.925 |   0.000 |
+| pizzarestaurant_count |    1.158 |   0.001 |
+
+``` r
+# Obtaining r-squared, p-value
+fit |> 
+  broom::glance() |> 
+  select(r.squared, p.value) |> 
+  knitr::kable(digits = 3)
+```
+
+| r.squared | p.value |
+|----------:|--------:|
+|      0.07 |   0.001 |
+
+``` r
+# Looking at the residuals vs. fitted values
+zipcode_summary |> 
+  modelr::add_residuals(fit) |> 
+  modelr::add_predictions(fit) |> 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point() 
+```
+
+    ## Warning: Removed 24 rows containing
+    ## missing values or values
+    ## outside the scale range
+    ## (`geom_point()`).
+
+<img src="Final-Code_files/figure-gfm/unnamed-chunk-4-1.png" width="90%" />
+
+``` r
+# Plotting rat sightings count vs. restaurant count
+zipcode_summary |> 
+  ggplot(aes(x = pizzarestaurant_count, y = ratreport_count)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    x = "# Pizza Restaurants",
+    y = "# Rat Sighting Reports",
+    title = "Rat Sightings vs. Pizza Restaurants"
+ )
+```
+
+    ## `geom_smooth()` using formula
+    ## = 'y ~ x'
+
+    ## Warning: Removed 24 rows containing
+    ## non-finite outside the scale
+    ## range (`stat_smooth()`).
+    ## Removed 24 rows containing
+    ## missing values or values
+    ## outside the scale range
+    ## (`geom_point()`).
+
+<img src="Final-Code_files/figure-gfm/unnamed-chunk-4-2.png" width="90%" />

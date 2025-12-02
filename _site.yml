@@ -3,8 +3,13 @@ output_dir: "."
 navbar:
   title: "Home"
   right:
-    - text: "Home"
-      href: index.html
+    - text: "Our Code"
+      href: Final-Code.html
+    - text: "Heat Maps"
+      href: datavisualizations.html
+    - text: "Plots"
+      href: plotlyfinal.html
+      
 output:
   html_document:
     theme: darkly
