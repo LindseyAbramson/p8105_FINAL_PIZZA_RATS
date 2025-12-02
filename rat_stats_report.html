@@ -11,7 +11,7 @@
 
 
 
-<title>NYC Pizza Rats</title>
+<title>Rat Stats Report</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -29,9 +29,6 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
-<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -222,69 +219,6 @@ $(document).ready(function () {
 
 
 
-<style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-@media print {
-.toc-content {
-  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
-  float: right;
-}
-}
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.90em;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-
-</style>
-
-
 
 </head>
 
@@ -292,16 +226,6 @@ div.tocify {
 
 
 <div class="container-fluid main-container">
-
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -342,40 +266,49 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">NYC Pizza Rats</h1>
+<h1 class="title toc-ignore">Rat Stats Report</h1>
 
 </div>
 
 
-<div id="ratstats-data-by-the-slice" class="section level1">
-<h1>RatStats: Data by the Slice</h1>
-<p><strong>Do the rats of New York City crave the unctuous, cheesy,
-saucy, crusty delight that draws tourists from around the world to the
-Big Apple—the unrivaled, saliva-inducing culinary masterpiece that is
-pizza?</strong></p>
-<p><img
-src="https://i.cbc.ca/1.3237852.1442878202!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_1180/pizza-rat.jpg?im=Resize%3D860" /></p>
-<p>While many New Yorkers (our renowned Rat Czar included) view their
-rodent neighbors as adversaries, we may have more in common than the
-skeptics care to admit.</p>
-<p>Rats have long been spotted hauling slices many times their size
-through the streets and subway tunnels—a dedication that rivals even the
-most determined late-night pizza seeker. Our team at the Pizza Rat
-Research Institute at Columbia Mailman is here to investigate the truth:
-<em>do rats actually like pizza?</em></p>
-<p>Join us as we embark on this exploratory analysis to finally shed
-light on a question that has captivated—and perhaps haunted—our city for
-far too long.</p>
-<p><img
-src="https://preview.redd.it/two-versions-of-the-nyc-pizza-rat-v0-6rkrd71p7kv81.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=f78d3dc23b7f4e9d7d6bb471bdcb92deae9ea97d" /></p>
-<p><img
-src="https://preview.redd.it/two-versions-of-the-nyc-pizza-rat-v0-8nb4xeox7kv81.png?width=1080&amp;crop=smart&amp;auto=webp&amp;s=d2e024261960c439b68f927e9a97585100ee2e62" /></p>
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>Our research team was motivated by the intense desire to understand
+the gustatory preferences of our NYC rodent counterparts. With a wealth
+of publicly available data, we endeavored to take a deep delve into the
+association between prevalence of pizza restaurants and frequency of rat
+sightings across zipcodes in New York City.</p>
+</div>
+<div id="related-work" class="section level2">
+<h2>Related Work</h2>
+</div>
+<div id="initial-questions" class="section level2">
+<h2>Initial Questions</h2>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+</div>
+<div id="exploratory-analysis" class="section level2">
+<h2>Exploratory Analysis</h2>
+<p>Visually exploring the distribution of rat sightings and pizza
+restaurants across zipcodes using heat maps, we see an inconsistent
+spatial relationship between areas with a high density of both pizza
+serving establishments and rats. These visual ques were early indicators
+that where NYC rats choose to spend their leisure time may be more
+accurately predicted by factors other than access to cheesy, saucy
+confections.</p>
+</div>
+<div id="additional-analysis" class="section level2">
+<h2>Additional analysis</h2>
+<p>We analyzed the relationship between pizza restaurant count and
+number of rat sightings using linear regression.</p>
+</div>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
 </div>
 
 
 
-</div>
-</div>
 
 </div>
 
@@ -408,35 +341,6 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
-<script>
-$(document).ready(function ()  {
-
-    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
-    $('.unlisted.unnumbered').addClass('toc-ignore')
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

@@ -9,6 +9,8 @@ navbar:
       href: datavisualizations.html
     - text: "Plots"
       href: plotlyfinal.html
+    - text: "Rat Stats Report"
+      href: rat_stats_report.html
       
 output:
   html_document:
