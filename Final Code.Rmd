@@ -110,13 +110,21 @@ fit |>
   broom::tidy() |> 
   select(term, estimate, p.value) |> 
   knitr::kable(digits = 3)
+```
+For each additional pizza restaurant per NYC zipcode, the predicted number of rat sightings increases by a 1.16 (p-value = 0.001). The effect is statistically significant, indicating that rats may indeed be pizza lovers.
 
+
+```{r, eval = FALSE}
 # Obtaining r-squared, p-value
 fit |> 
   broom::glance() |> 
   select(r.squared, p.value) |> 
   knitr::kable(digits = 3)
+```
 
+Only 7% of the variability in number of rat sightings can be explained by the variability in number of pizza restaurants ($R^2$ = 0.07). 
+
+```{r, eval = FALSE}
 # Looking at the residuals vs. fitted values
 zipcode_summary |> 
   modelr::add_residuals(fit) |> 
