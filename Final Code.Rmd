@@ -74,7 +74,7 @@ Our decision to use only 2025 data provides a current snapshot of rat sightings 
 
 
 ## Merge Summaries by Zipcode
-Note that we can run our analyses without doing this, but this simplifies our data down to just counts by zipcode. THIS DOES NOT INCLUDE LAT AND LONG....for mapping purposes may need to use individual datasets above!
+Note that we can run our analyses without doing this, but this simplifies our data down to just counts by zipcode. 
 ```{r, eval = FALSE}
 # Count rats per zipcode
 rat_summary <- rat_df |>

@@ -4,37 +4,65 @@ output: html_document
 ---
 
 
-## Motivation
+### Motivation
 
 Our research team was motivated by the intense desire to understand the gustatory preferences of our NYC rodent counterparts. With a wealth of publicly available data, we endeavored to take a deep delve into the association between prevalence of pizza restaurants and frequency of rat sightings across zipcodes in New York City.
 
 
-## Related Work
+
+
+### Related Work
+
+This project was inspired by a mix of public data tools, popular culture, and course topics. Analyses of 311 data and restaurant inspections, frequently showcased in blogs, news articles, and city reporting dashboards, demonstrate how urban data sets can be used to uncover neighborhood trends and environmental patterns. We were intrigued by the NYC restaurant inspection data that we first saw in class. Furthermore, the cultural phenomenon of “Pizza Rat” (see below) also motivated our inquiry by linking NYC rats and pizza in the public imagination. Finally, discussions throughout the course on cleaning, merging, and analyzing spatial data guided our methodological approach and helped shape our research questions.
+
+![](https://media1.tenor.com/m/iVHe9N7JksoAAAAd/rat-pizza.gif)
 
 
 
-## Initial Questions
+### Initial Questions
+
+Our project began with one central question:
+
+- Is there an association between the number of pizza restaurants in a zip code and the number of rat sightings?
+
+As we explored the data, this question evolved into several additional considerations:
+
+- Which zip codes home the largest number of pizza joints and rat sightings individually?
+- Do clusters of each phenomenon occur in the same neighborhoods, or do they diverge?
+- Is any association meaningful, or merely a reflection of broader factors like commercial density or population size?
+- Does restricting the analysis to only 2025 affect the observed relationship?
 
 
 
+### Data
 
-## Data
+We used two data sets from NYC Open Data (2025 only):
+
+- Rat Sightings (311 data). Includes date of report, borough, ZIP code, and precise coordinates of each sighting. These data represent resident-reported encounters with rats, not direct biological surveys, and therefore reflect patterns in human observation as well as true rodent presence.
+
+- NYC Restaurant Inspection Results. Contains restaurant name, location, cuisine type, inspection date, assigned grade, and description of any violations. We identified pizza-serving establishments based on keywords in their listed names.Our search terms for pizza restaurants include "pizza", "pizzeria", and "slice". Ideally this would cover all pizza joints but we recognize that some may fall under various other names!
+
+Our decision to use only 2025 data provides a current snapshot of rat sightings and pizza restaurant inspections in NYC. This ensures relevance but means we cannot analyze longitudinal trends in rat populations, and some restaurants may be absent from our data set if they weren't inspected during this specific time period. 
 
 
 
-## Exploratory Analysis
+### Exploratory Analysis
 
 Visually exploring the distribution of rat sightings and pizza restaurants across zip codes using heat maps, we see an inconsistent spatial relationship between areas with a high density of both pizza serving establishments and rats. These visual ques were early indicators that where NYC rats choose to spend their leisure time may be more accurately predicted by factors other than access to cheesy, saucy confections.
 
 To further examine the linear relationship between number of pizza restaurants and number of rat sightings, we calculated the R-squared. The R-squared value of 0.07 indicates that only 7% of the variation in the number of rat sightings can be explained by the number of pizza restaurants in a given zip code, and 93% is explained by other factors. The weak effect of pizza establishments on prevalence of rats was a surprise to the team at the Pizza Rat Research Institute at Columbia Mailman, therefore further statistical testing was necessitated. 
 
-## Additional analysis
+
+
+### Additional analysis
 
 We analyzed the relationship between pizza restaurant count and number of rat sightings using linear regression.
 
 We regressed number of rat sightings against number of pizza restaurants, and obtained a parameter estimate and associated p-value. We found that for each additional pizza restaurant per zip code, number of rat sightings increased by an average of 1.16 (p-value = 0.001). Our analysis showed that number of pizza establishments is positively and significantly associated with number of rat sightings, though the effect is weak.
 
-## Discussion
+
+
+### Discussion
 
 Our study demonstrates that while there is a statistically significant positive association between availability of pizza, as operationalized by number of pizza serving establishments, and number of rat sightings, the relationship is not strong in a predictive sense. 
 
