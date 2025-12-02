@@ -291,20 +291,54 @@ sightings across zipcodes in New York City.</p>
 <div id="exploratory-analysis" class="section level2">
 <h2>Exploratory Analysis</h2>
 <p>Visually exploring the distribution of rat sightings and pizza
-restaurants across zipcodes using heat maps, we see an inconsistent
+restaurants across zip codes using heat maps, we see an inconsistent
 spatial relationship between areas with a high density of both pizza
 serving establishments and rats. These visual ques were early indicators
 that where NYC rats choose to spend their leisure time may be more
 accurately predicted by factors other than access to cheesy, saucy
 confections.</p>
+<p>To further examine the linear relationship between number of pizza
+restaurants and number of rat sightings, we calculated the R-squared.
+The R-squared value of 0.07 indicates that only 7% of the variation in
+the number of rat sightings can be explained by the number of pizza
+restaurants in a given zip code, and 93% is explained by other factors.
+The weak effect of pizza establishments on prevalence of rats was a
+surprise to the team at the Pizza Rat Research Institute at Columbia
+Mailman, therefore further statistical testing was necessitated.</p>
 </div>
 <div id="additional-analysis" class="section level2">
 <h2>Additional analysis</h2>
 <p>We analyzed the relationship between pizza restaurant count and
 number of rat sightings using linear regression.</p>
+<p>We regressed number of rat sightings against number of pizza
+restaurants, and obtained a parameter estimate and associated p-value.
+We found that for each additional pizza restaurant per zip code, number
+of rat sightings increased by an average of 1.16 (p-value = 0.001). Our
+analysis showed that number of pizza establishments is positively and
+significantly associated with number of rat sightings, though the effect
+is weak.</p>
 </div>
 <div id="discussion" class="section level2">
 <h2>Discussion</h2>
+<p>Our study demonstrates that while there is a statistically
+significant positive association between availability of pizza, as
+operationalized by number of pizza serving establishments, and number of
+rat sightings, the relationship is not strong in a predictive sense.</p>
+<p>This study has several limitations. This analysis is limited by
+substantial surveillance and detection bias, as rat sightings rely on
+311 reports, which reflect where people look for rats—not necessarily
+where rats actually are. Likewise, areas with more pizza restaurants may
+simply have more pedestrian traffic, increasing the probability of rat
+detection rather than true rat abundance. The study is also susceptible
+to ecological fallacy and residual confounding, since neighborhood-level
+counts of pizza shops correlate with population density, waste
+management practices, and a host of unmeasured urban quirks that jointly
+shape rodent ecology. Finally, pervasive spatial autocorrelation means
+rats—and the humans who spot them—rarely respect census-tract
+boundaries, complicating interpretation and inviting caution before
+attributing any causal power to pizza.</p>
+<p>Further research is needed to understand the culinary preferences of
+rats in New York City.</p>
 </div>
 
 
