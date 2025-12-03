@@ -56,7 +56,7 @@ Next, we plotted histograms to assess the distribution of the `ratreport_count` 
 
 Visually exploring the distribution of rat sightings and pizza restaurants across zip codes using heat maps, we see an inconsistent spatial relationship between areas with a high density of both pizza serving establishments and rats. These visual cues were early indicators that where NYC rats choose to spend their leisure time may be more accurately predicted by factors other than access to cheesy, saucy confections.
 
-**Assessing Linear Relationship using R-Squared**
+**Statistical Analysis**
 
 To further examine the linear relationship between number of pizza restaurants and number of rat sightings, we calculated the R-squared. The R-squared value of 0.07 indicates that only 7% of the variation in the number of rat sightings can be explained by the number of pizza restaurants in a given zip code, and 93% is explained by other factors. The weak effect of pizza establishments on prevalence of rats was a surprise to the team at the Pizza Rat Research Institute at Columbia Mailman, therefore further statistical testing was necessitated. 
 

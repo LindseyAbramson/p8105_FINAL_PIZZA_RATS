@@ -1,0 +1,121 @@
+---
+title: "Data Sources"
+output: 
+  html_document:
+    code_folding: hide
+
+---
+
+```{r setup, include = FALSE}
+
+
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(haven)
+library(glmnet)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+We used two datasets from NYC Open Data (2025 only):
+
+- Rat Sightings (311 data). Includes date of report, borough, ZIP code, and precise coordinates of each sighting. These data represent resident-reported encounters with rats, not direct biological surveys, and therefore reflect patterns in human observation as well as true rodent presence.
+
+- NYC Restaurant Inspection Results. Contains restaurant name, location, cuisine type, inspection date, assigned grade, and description of any violations. We identified pizza-serving establishments based on keywords in their listed names.Our search terms for pizza restaurants include "pizza", "pizzeria", and "slice". Ideally this would cover all pizza joints but we recognize that some may fall under various other names!
+
+Our decision to use only 2025 data provides a current snapshot of rat sightings and pizza restaurant inspections in NYC. This ensures relevance but means we cannot analyze longitudinal trends in rat populations, and some restaurants may be absent from our dataset if they weren't inspected during this specific time period. Our search terms for pizza restuarants include "pizza", "pizzeria", and "slice". Ideally this would cover all pizza joints but we recognize that some may fall under various other names!
+
+## Import Datasets
+
+The following steps were used to import and tidy our datasets downloaded from NYC Open Data. 
+
+Please note for all those who use this... run the following code once.
+```{r, eval=FALSE, message = FALSE, warning = FALSE}
+rat_df =
+read_csv("data_not_for_github/NYC_rats.csv") |>
+janitor::clean_names() |>
+mutate(created_date = ymd_hms(created_date)) |>
+filter(year(created_date) == 2025) |>
+  rename(zipcode = incident_zip) |>
+  select(created_date, zipcode, borough, latitude, longitude, location_type)
+
+restaurant_df =
+read_csv("data_not_for_github/NYC_restaurant.csv") |>
+janitor::clean_names() |>
+mutate(inspection_date = mdy(inspection_date))   |>
+filter(year(inspection_date) == 2025) |>
+  select(dba, boro, zipcode, inspection_date, violation_description, grade, latitude, longitude)
+
+
+dir.create("data_small", showWarnings = FALSE)
+write_csv(rat_df, "data_small/rat_df_2025_small.csv")
+write_csv(restaurant_df, "data_small/restaurant_df_2025_small.csv")
+```
+
+```{r, eval = FALSE}
+rat_df <- read_csv("data_small/rat_df_2025_small.csv")
+restaurant_df <- read_csv("data_small/restaurant_df_2025_small.csv")
+
+# Limit to only pizza joints
+pizza_df =
+  restaurant_df |>
+  filter((str_detect(str_to_lower(dba), 
+                    "pizza|pizzeria|slice")))
+```
+
+
+## Create Summaries by Zipcode
+
+Next, we created a dataframe that summarized counts of rat sightings and pizza restaurants by zipcode. Note that we can run our analyses without doing this, but this simplifies our data down to just counts by zipcode. 
+
+Our `zipcode_summary` dataset includes the following information on 73 NYC zipcodes. 
+
+- `zipcode`: Zipcode number
+- `ratreport_count`: Number of rat sightings in given zipcode
+- `pizzarestaurant_count`: Number of pizza restaurants in given zipcode
+- `Pizza_A`: Number of pizza restaurants given A rating during inspection
+- `Pizza_B`: Number of pizza restaurants given B rating during inspection
+- `Pizza_C`: Number of pizza restaurants given C rating during inspection
+
+```{r, eval = FALSE}
+# Count rats per zipcode
+rat_summary <- rat_df |>
+  group_by(zipcode) |>
+  summarise(ratreport_count = n(), .groups = "drop")
+
+# Count restaurants per zipcode by grade
+pizza_summary <- pizza_df |>
+  group_by(zipcode) |>
+  summarise(
+    pizzarestaurant_count = n(),
+    pizza_A = sum(grade == "A", na.rm = TRUE),
+    pizza_B = sum(grade == "B", na.rm = TRUE),
+    pizza_C = sum(grade == "C", na.rm = TRUE)
+  , .groups = "drop")
+
+# Join
+zipcode_summary <- rat_summary |>
+  left_join(pizza_summary, by = "zipcode")
+
+# Saving zipcode_summary to directory
+write_csv(zipcode_summary, "data_small/zipcode_summary.csv")
+```
+
+
+

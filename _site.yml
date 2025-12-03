@@ -3,8 +3,8 @@ output_dir: "."
 navbar:
   title: "Home"
   right:
-    - text: "Our Code"
-      href: Final-Code.html
+    - text: "Data Sources"
+      href: data_sources.html
     - text: "Heat Maps"
       href: datavisualizations.html
     - text: "Plots"

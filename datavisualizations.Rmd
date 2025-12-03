@@ -10,6 +10,11 @@ output:
 
 ```{r setup, include = FALSE}
 
+# These are GIS specific packages that need to be installed if they aren't already
+#install.packages("sf")           # this is the main gis package
+#install.packages("RColorBrewer") # for color palettes
+#install.packages("classInt")     # for creating breaks in the distribution
+#install.packages("ggspatial")    # for scale bars and north arrows
 
 library(tidyverse)
 library(dplyr)
