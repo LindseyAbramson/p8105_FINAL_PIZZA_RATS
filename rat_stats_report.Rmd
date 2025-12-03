@@ -2,7 +2,7 @@
 title: "Rat Stats Report"
 output: html_document
 ---
-
+Pizza Rat Research Institute at Columbia Mailman: Lindsey Abramson, Vaidehi Chudgar, Jake Vettoretti, Rachel Novick 
 
 ### Motivation
 

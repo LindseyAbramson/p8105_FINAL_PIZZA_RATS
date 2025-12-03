@@ -1,6 +1,8 @@
 ---
 title: "Plots...some interative, some not!"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 subtitle: "Exploring the Potential Correlation of Rats and Pizza in NYC by Zipcode"
 ---
 
@@ -50,7 +52,7 @@ zipcode_summary <- read_csv("data_small/zipcode_summary.csv") |>
   )
 ```
 
-```{r interactive-scatter, message=FALSE, warning=FALSE, echo=FALSE}
+```{r interactive-scatter, message=FALSE, warning=FALSE}
 # Fit the model
 fit <- lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
 
@@ -105,7 +107,7 @@ plotly::ggplotly(p, tooltip = "text")
 
 This scatterplot displays the relationship between pizza restaurant count and rat sightings for every zipcode. Each point represents one zipcode, and the color indicates the number of rat reports. Most points cluster at lower values for both variables, while a few zipcodes show very high rat activity. The wide spread of the points shows that the relationship is weak and that many other factors likely contribute to rat sightings.
 
-```{r top10-rats, message=FALSE, warning=FALSE, echo=FALSE}
+```{r top10-rats, message=FALSE, warning=FALSE}
 zipcode_summary |>
   slice_max(ratreport_count, n = 10) |>
   ggplot(aes(x = reorder(zipcode, ratreport_count), y = ratreport_count)) +
@@ -121,7 +123,7 @@ zipcode_summary |>
 
 This bar chart highlights the ten zipcodes with the highest number of rat sightings. A few locations stand out with much higher counts than the rest of the city. These areas may have environmental or structural conditions that support larger rat populations. This chart helps identify where rat issues are most concentrated.
 
-```{r top10-pizza, message=FALSE, warning=FALSE, echo=FALSE}
+```{r top10-pizza, message=FALSE, warning=FALSE}
 zipcode_summary |> 
   slice_max(pizzarestaurant_count, n = 10) |> 
   ggplot(aes(x = reorder(zipcode, pizzarestaurant_count),
@@ -138,7 +140,7 @@ zipcode_summary |>
 
 This bar chart shows the ten zipcodes with the highest number of pizza restaurants. These areas often have dense food activity and heavy foot traffic. When compared with the rat sightings chart, it becomes clear that zipcodes with many pizza restaurants do not always have the highest rat activity. This supports the idea that pizza restaurant density is not a strong predictor of rat reports across zipcodes.
 
-```{r regression-line-only-interactive, message=FALSE, warning=FALSE, echo=FALSE}
+```{r regression-line-only-interactive, message=FALSE, warning=FALSE}
 # Fit the model
 fit <- lm(ratreport_count ~ pizzarestaurant_count, data = zipcode_summary)
 
