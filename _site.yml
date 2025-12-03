@@ -11,6 +11,8 @@ navbar:
       href: plotlyfinal.html
     - text: "Rat Stats Report"
       href: rat_stats_report.html
+    - icon: fa-github fa-lg
+      href: https://github.com/LindseyAbramson/p8105_FINAL_PIZZA_RATS/tree/main
       
 output:
   html_document:
