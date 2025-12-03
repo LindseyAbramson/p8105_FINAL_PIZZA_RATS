@@ -4,12 +4,8 @@ output: html_document
 date: "2025-11-21"
 ---
 
-```{r setup, eval = FALSE}
+```{r setup, include = FALSE}
 
-install.packages("sf")           # gis package
-install.packages("RColorBrewer") # color palettes
-install.packages("classInt")     # creates breaks in the distribution
-install.packages("ggspatial")    # scale bars and north arrows
 
 library(tidyverse)
 library(dplyr)

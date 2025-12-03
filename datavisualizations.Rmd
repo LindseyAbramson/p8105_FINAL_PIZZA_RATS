@@ -2,12 +2,13 @@
 title: "Visualizing the Data using Heatmaps"
 output: 
   html_document:
+    code_folding: hide
     theme: darkly
 
 ---
 
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 
 
 library(tidyverse)
@@ -39,9 +40,10 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
+To examine how rat sightings and pizza restaurants are spatially distributed, we obtained a NYC shapefile from NYC government data portal. This shapefile included the geometric shapes of each zipcode area and an attribute table that included the zipcode numbers for each shape. We merged this shapefile with our cleaned dataset using the common variable of zipcodes. 
 
 
-```{r loading and merging data, include = FALSE}
+```{r loading and merging data, message = FALSE, warning = FALSE, results = 'hide'}
 
 # Zip code shapefile
 zip_nyc =
@@ -50,10 +52,11 @@ zip_nyc =
   select(zipcode, geometry)
 
 # Basic plot
-ggplot() +
+basic = 
+  ggplot() +
   geom_sf(data = zip_nyc)
 
-# DIssolving shapefile for just NYC boundary
+# Dissolving shapefile for just NYC boundary
 NYC <- st_union(zip_nyc)
 
 # Loading rat and restaurant data
@@ -69,7 +72,11 @@ nyc_rat_pizza =
 
 ```
 
-```{r Rat map, include = FALSE}
+### Rat Sightings Map
+
+To create a heatmap of rat sightings across NYC, we first had to assess the distribution of the `ratreport_count` variable in our dataset. As demonstrated below, `rareport_count` is right skewed, with most zipcodes reporting anywhere from 0 to 200 sightings. Due to the skewed nature of this variable, when categorizing our data for the heatmap, we used a natural breaks jenks approach to ensure zipcodes with similar rat sightings are visually represented using the same color.  
+
+```{r rat map base map, include = FALSE}
 # Rat count base map
 ggplot() +
   geom_sf(
@@ -78,20 +85,32 @@ ggplot() +
     color = "black",
     linewidth = .2
   ) 
+```
 
-
-# Looking at the different color palette options 
-display.brewer.all(type = "seq")
+```{r Rat sightings distribution, message = FALSE, warning = FALSE}
 
 # Examining distribution to figure out how to categorize data
 nyc_rat_pizza |> 
   ggplot(aes(x = ratreport_count)) +
-  geom_histogram()
+  geom_histogram(fill = "darkgreen", color = "white") +
+  labs(
+    x = "# of Rat Sightings",
+    y = "Count",
+    title = "Distribution of Rat Sightings Variable"
+  )
 
+```
+
+
+```{r rat map breaks, include = FALSE}
 # Right skewed data so using natural break jenks as opposed to quantiles
 breaks_rat <- classIntervals(nyc_rat_pizza$ratreport_count, n = 5, style = "jenks")$brks
 print(breaks_rat)
+```
 
+The final step was to refine the formatting and styling of the heatmap to ensure clear and effective visualization.
+
+```{r formatted rat map, message = FALSE, warning = FALSE, results = 'hide'}
 # Formatted Rat Map
 ggplot() +
   geom_sf(                            # setting rat counts as my fill             
@@ -143,7 +162,11 @@ ggplot() +
 ```
 
 
-```{r restaurant map, include = FALSE}
+### Pizza Restuarants Map
+
+A similar approach was taken to create the pizza restaurants map. We first assessed the distribution of the `pizzarestaurant_count` variable in our dataset. We found that this variable was also right skewed, with most zip codes ranging from 0-50 pizza restaurants. We also used natural breaks jenks to categorize `pizzarestaurant_count`.
+
+```{r restaurant map base map, include = FALSE}
 # Pizza count base map
 ggplot() +
   geom_sf(
@@ -151,21 +174,33 @@ ggplot() +
     aes(fill = pizzarestaurant_count),
     color = "black",
     linewidth = .2
-  ) 
+  )
+```
 
 
-# Select color palette and our breaks: 
-display.brewer.all(type = "seq")
-
+```{r restaurant distribution, message = FALSE, warning = FALSE}
 # Examine distribution to figure out how to categorize data
 nyc_rat_pizza |> 
   ggplot(aes(x = pizzarestaurant_count)) +
-  geom_histogram()
+  geom_histogram(fill = "darkred", color = "white") +
+  labs(
+    x = "# of Pizza Restaurants",
+    y = "Count",
+    title = "Distribution of Pizza Resturants Variable"
+  )
+```
 
+
+```{r restaurant breaks, include = FALSE}
 # Right skewed so using natural break jenks
 breaks_pizza <- classIntervals(nyc_rat_pizza$pizzarestaurant_count, n = 5, style = "jenks")$brks
 print(breaks_pizza)
 
+```
+
+The final step was to refine the formatting and styling of the heatmap to ensure clear and effective visualization.
+
+```{r restaurant map formatted, message = FALSE, warning = FALSE, results = 'hide'}
 # Formatted Pizza Map
 ggplot() +
   geom_sf(                              # setting pizza counts as my fill
@@ -216,6 +251,7 @@ ggplot() +
     )  -> map_pizza
 ```
 
+### Results
 
 These maps illustrate the spatial distribution of rat sightings and pizza restaurants across New York City zipcodes. Most rat sightings are concentrated in central Brooklyn, particularly in neighborhoods such as Flatbush, Prospect Heights, and Bedford-Stuyvesant. A few zipcodes in the West Bronx and around Morningside Heights also show elevated rat activity.
 
@@ -225,7 +261,7 @@ There is only one zipcode with both a high number of rat sightings and a high nu
 
 
 
-```{r Joining the maps, fig.width=10, fig.height=12, include= FALSE}
+```{r Joining the maps, fig.width=10, fig.height=12, include = FALSE}
 
 # combining both maps to view side by side
 map_rat + map_pizza -> combined_plot
@@ -240,7 +276,7 @@ ggsave(
 
 ```
 
-```{r presenting the map, echo = FALSE, out.width='120%'}
+```{r presenting the map, echo = TRUE, message = FALSE, warning = FALSE, out.width='120%'}
 
 # presenting map
 knitr::include_graphics("datavisualizations_files/nyc_maps.png")

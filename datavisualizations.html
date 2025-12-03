@@ -30,6 +30,7 @@
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -218,6 +219,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -272,6 +276,14 @@ $(document).ready(function () {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Visualizing the Data using Heatmaps</h1>
@@ -279,6 +291,178 @@ $(document).ready(function () {
 </div>
 
 
+<p>To examine how rat sightings and pizza restaurants are spatially
+distributed, we obtained a NYC shapefile from NYC government data
+portal. This shapefile included the geometric shapes of each zipcode
+area and an attribute table that included the zipcode numbers for each
+shape. We merged this shapefile with our cleaned dataset using the
+common variable of zipcodes.</p>
+<pre class="r"><code># Zip code shapefile
+zip_nyc =
+  st_read(&quot;maps/MODZCTA_2010.shp&quot;) |&gt; 
+  rename(zipcode = MODZCTA) |&gt; 
+  select(zipcode, geometry)
+
+# Basic plot
+basic = 
+  ggplot() +
+  geom_sf(data = zip_nyc)
+
+# Dissolving shapefile for just NYC boundary
+NYC &lt;- st_union(zip_nyc)
+
+# Loading rat and restaurant data
+zipcode_summary &lt;- read_csv(&quot;data_small/zipcode_summary.csv&quot;) |&gt; 
+  mutate(
+    zipcode = as.character(zipcode)
+  )
+
+# Joining rat and restaurant data with shapefile. Now, I have one file with the geometries for the map, and rat and pizza count data.
+nyc_rat_pizza =
+  zip_nyc |&gt; 
+  left_join(zipcode_summary, by = &quot;zipcode&quot;)</code></pre>
+<div id="rat-sightings-map" class="section level3">
+<h3>Rat Sightings Map</h3>
+<p>To create a heatmap of rat sightings across NYC, we first had to
+assess the distribution of the <code>ratreport_count</code> variable in
+our dataset. As demonstrated below, <code>rareport_count</code> is right
+skewed, with most zipcodes reporting anywhere from 0 to 200 sightings.
+Due to the skewed nature of this variable, when categorizing our data
+for the heatmap, we used a natural breaks jenks approach to ensure
+zipcodes with similar rat sightings are visually represented using the
+same color.</p>
+<pre class="r"><code># Examining distribution to figure out how to categorize data
+nyc_rat_pizza |&gt; 
+  ggplot(aes(x = ratreport_count)) +
+  geom_histogram(fill = &quot;darkgreen&quot;, color = &quot;white&quot;) +
+  labs(
+    x = &quot;# of Rat Sightings&quot;,
+    y = &quot;Count&quot;,
+    title = &quot;Distribution of Rat Sightings Variable&quot;
+  )</code></pre>
+<p><img src="datavisualizations_files/figure-html/Rat%20sightings%20distribution-1.png" width="90%" /></p>
+<p>The final step was to refine the formatting and styling of the
+heatmap to ensure clear and effective visualization.</p>
+<pre class="r"><code># Formatted Rat Map
+ggplot() +
+  geom_sf(                            # setting rat counts as my fill             
+    data = nyc_rat_pizza,
+    aes(fill = ratreport_count),
+    color = &quot;white&quot;,
+    linewidth = .05
+  )  +
+  scale_fill_fermenter(               # indicating the color palette for the rat sightings map
+    direction = 1,
+    palette = &quot;Greens&quot;,
+    breaks = breaks_rat
+  ) +
+  geom_sf(                            # adding a thin black outline around map
+    data = NYC,
+    fill = NA,
+    color = &quot;black&quot;,
+    linewidth = 0.03
+  ) +
+  labs(                                # adding title and subtitle 
+    title = &quot;Number of Rat Sightings in \nNew York City by Zipcode, 2025&quot;,
+    subtitle = &quot;Sightings as of November 2025&quot;, 
+    fill = &quot;Number of Sightings&quot;
+  ) +
+  theme_void() +
+  theme(                             # title and subtitle formatting and placement
+    plot.title = element_text(face = &quot;bold&quot;, size = 13, family = &quot;sans&quot;, vjust = -20),
+    plot.subtitle = element_text(face = &quot;italic&quot;, size = 11, vjust = -3.5),
+    legend.title = element_text(size = 10),
+    legend.position = &quot;inside&quot;,
+    legend.position.inside = c(0.2, 0.6),
+    legend.key.size = unit(.4, &#39;cm&#39;),
+    plot.margin = margin(0, 0, 0, 0),        
+    panel.spacing = unit(0, &quot;pt&quot;)            
+  ) + 
+  annotation_scale(                   # adding a scale bar
+    style = &quot;ticks&quot;,   
+    pad_x = unit(1.4, &quot;in&quot;),
+    pad_y = unit(.3, &quot;in&quot;),
+    unit_category = &quot;imperial&quot;
+  ) +
+  annotation_north_arrow(             # adding a north arrow
+    height = unit(.8, &quot;cm&quot;),
+    width = unit(1, &quot;cm&quot;),
+    pad_x = unit(1, &quot;in&quot;), 
+    pad_y = unit(0.2, &quot;in&quot;),
+    style = north_arrow_minimal 
+    )  -&gt; map_rat</code></pre>
+</div>
+<div id="pizza-restuarants-map" class="section level3">
+<h3>Pizza Restuarants Map</h3>
+<p>A similar approach was taken to create the pizza restaurants map. We
+first assessed the distribution of the
+<code>pizzarestaurant_count</code> variable in our dataset. We found
+that this variable was also right skewed, with most zip codes ranging
+from 0-50 pizza restaurants. We also used natural breaks jenks to
+categorize <code>pizzarestaurant_count</code>.</p>
+<pre class="r"><code># Examine distribution to figure out how to categorize data
+nyc_rat_pizza |&gt; 
+  ggplot(aes(x = pizzarestaurant_count)) +
+  geom_histogram(fill = &quot;darkred&quot;, color = &quot;white&quot;) +
+  labs(
+    x = &quot;# of Pizza Restaurants&quot;,
+    y = &quot;Count&quot;,
+    title = &quot;Distribution of Pizza Resturants Variable&quot;
+  )</code></pre>
+<p><img src="datavisualizations_files/figure-html/restaurant%20distribution-1.png" width="90%" /></p>
+<p>The final step was to refine the formatting and styling of the
+heatmap to ensure clear and effective visualization.</p>
+<pre class="r"><code># Formatted Pizza Map
+ggplot() +
+  geom_sf(                              # setting pizza counts as my fill
+    data = nyc_rat_pizza,
+    aes(fill = pizzarestaurant_count),
+    color = &quot;white&quot;,
+    linewidth = .05
+  )  +
+  scale_fill_fermenter(                # indicating color palette
+    direction = 1,
+    palette = &quot;Reds&quot;,
+    breaks = breaks_pizza
+  ) +
+  geom_sf(                             # adding black border around map
+    data = NYC,
+    fill = NA,
+    color = &quot;black&quot;,
+    linewidth = 0.03
+  )  +
+  labs(                                # adding title and subtitle 
+    title = &quot;Number of Pizza Restaurants \nin New York City by Zipcode, 2025&quot;,
+    subtitle = &quot;Includes by-the-slice and\nsit-down pizza restuarants&quot;, 
+    fill = &quot;Number of Pizza Restaurants&quot;
+  ) +
+  theme_void() +
+  theme(                              # formatting and placement of title, subtitle, legend
+    plot.title = element_text(face = &quot;bold&quot;, size = 13, family = &quot;sans&quot;, vjust = -20),
+    plot.subtitle = element_text(face = &quot;italic&quot;, size = 11, vjust = -25),
+    legend.title = element_text(size = 10),
+    legend.position = &quot;inside&quot;,
+    legend.position.inside = c(0.2, 0.6),
+    legend.key.size = unit(.4, &#39;cm&#39;),
+    plot.margin = margin(0, 0, 0, 0),        
+    panel.spacing = unit(0, &quot;pt&quot;)            
+  ) +
+  annotation_scale(                   # adding a scale bar
+    style = &quot;ticks&quot;,   
+    pad_x = unit(1.4, &quot;in&quot;),
+    pad_y = unit(.3, &quot;in&quot;),
+    unit_category = &quot;imperial&quot;
+  ) +
+  annotation_north_arrow(             # adding a north arrow
+    height = unit(.8, &quot;cm&quot;),
+    width = unit(1, &quot;cm&quot;),
+    pad_x = unit(1, &quot;in&quot;), 
+    pad_y = unit(0.2, &quot;in&quot;),
+    style = north_arrow_minimal 
+    )  -&gt; map_pizza</code></pre>
+</div>
+<div id="results" class="section level3">
+<h3>Results</h3>
 <p>These maps illustrate the spatial distribution of rat sightings and
 pizza restaurants across New York City zipcodes. Most rat sightings are
 concentrated in central Brooklyn, particularly in neighborhoods such as
@@ -294,8 +478,11 @@ and a high number of pizza restaurants (11226, Flatbush). This suggests
 that pizza restaurant count alone may not be a strong predictor of rat
 activity. Other neighborhood-level factors must be contributing to
 variation in rat sightings across NYC.</p>
+<pre class="r"><code># presenting map
+knitr::include_graphics(&quot;datavisualizations_files/nyc_maps.png&quot;)</code></pre>
 <p><img src="datavisualizations_files/nyc_maps.png" width="120%" /></p>
 <p><em>Missing data represented using gray fill</em></p>
+</div>
 
 
 
@@ -330,6 +517,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

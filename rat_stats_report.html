@@ -348,13 +348,29 @@ they weren’t inspected during this specific time period.</p>
 </div>
 <div id="exploratory-analysis" class="section level3">
 <h3>Exploratory Analysis</h3>
+<p><strong>Spatial Distribution</strong></p>
+<p>To visually examine how rat sightings and pizza restaurants are
+spatially distributed, we decided to map our variables at the zipcode
+level. To do so, we first obtained a NYC shapefile from NYC government
+data portal. This shapefile included the geometric shapes of each
+zipcode area and an attribute table that included the zipcodes for each
+shape. We merged this shapefile with our cleaned dataset using the
+common variable of zipcodes.</p>
+<p>Next, we plotted histograms to assess the distribution of the
+<code>ratreport_count</code> and <code>pizzarestaurant_count</code>
+variables in our dataset. Both variables showed as being right skewed.
+Due to the skewed nature of these variables, when categorizing our data
+for the heatmap, we used a natural breaks jenks approach to ensure
+zipcodes with similar rat sightings are visually represented using the
+same color.</p>
 <p>Visually exploring the distribution of rat sightings and pizza
 restaurants across zip codes using heat maps, we see an inconsistent
 spatial relationship between areas with a high density of both pizza
-serving establishments and rats. These visual ques were early indicators
+serving establishments and rats. These visual cues were early indicators
 that where NYC rats choose to spend their leisure time may be more
 accurately predicted by factors other than access to cheesy, saucy
 confections.</p>
+<p><strong>Assessing Linear Relationship using R-Squared</strong></p>
 <p>To further examine the linear relationship between number of pizza
 restaurants and number of rat sightings, we calculated the R-squared.
 The R-squared value of 0.07 indicates that only 7% of the variation in
