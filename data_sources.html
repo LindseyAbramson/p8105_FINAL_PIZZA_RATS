@@ -296,33 +296,47 @@ $(document).ready(function () {
 
 <p>We used two datasets from NYC Open Data (2025 only):</p>
 <ul>
-<li><p>Rat Sightings (311 data). Includes date of report, borough, ZIP
-code, and precise coordinates of each sighting. These data represent
+<li><p><a href="https://data.cityofnewyork.us/Social-Services/Rat-Sightings/3q43-55fe/about_data">311
+Rat Sightings</a>: Includes the date of the report, borough, ZIP code,
+and precise coordinates of each sighting. These data represent
 resident-reported encounters with rats, not direct biological surveys,
 and therefore reflect patterns in human observation as well as true
 rodent presence.</p></li>
-<li><p>NYC Restaurant Inspection Results. Contains restaurant name,
-location, cuisine type, inspection date, assigned grade, and description
-of any violations. We identified pizza-serving establishments based on
-keywords in their listed names.Our search terms for pizza restaurants
-include “pizza”, “pizzeria”, and “slice”. Ideally this would cover all
-pizza joints but we recognize that some may fall under various other
-names!</p></li>
+<li><p><a href="https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j/about_data ">NYC
+Restaurant Inspection Results</a>: Contains restaurant name, location,
+cuisine type, inspection date, assigned grade, and description of any
+violations. Restaurant inspections occur at uneven intervals, and not
+all establishments receive inspections every year. As a result, some ZIP
+codes may appear to have fewer restaurants simply due to inspection
+timing rather than true absence. We identified pizza-serving
+establishments based on keywords in their listed names. Our search terms
+for pizza restaurants include “pizza”, “pizzeria”, and “slice”. Ideally
+this would cover all pizza joints but we recognize that some may fall
+under various other names!</p></li>
 </ul>
-<p>Our decision to use only 2025 data provides a current snapshot of rat
-sightings and pizza restaurant inspections in NYC. This ensures
-relevance but means we cannot analyze longitudinal trends in rat
-populations, and some restaurants may be absent from our dataset if they
-weren’t inspected during this specific time period. Our search terms for
-pizza restuarants include “pizza”, “pizzeria”, and “slice”. Ideally this
-would cover all pizza joints but we recognize that some may fall under
-various other names!</p>
-<div id="import-datasets" class="section level2">
-<h2>Import Datasets</h2>
-<p>The following steps were used to import and tidy our datasets
-downloaded from NYC Open Data.</p>
-<p>Please note for all those who use this… run the following code
-once.</p>
+<p>Our decision to use only 2025 data was driven primarily by the size
+of the full NYC Open Data datasets and a desire to provide a current
+snapshot of rat sightings and pizza restaurant inspections. Both the 311
+Rat Sightings dataset and the Restaurant Inspection Results dataset
+contain hundreds of thousands of records spanning many years, which
+makes processing the entire timespan computationally intensive and
+unnecessary for the scope of our project. Limiting our analysis to 2025
+allowed us to work with a more manageable dataset while still capturing
+a meaningful and current snapshot of rat activity and restaurant
+inspections across NYC. This choice, however, comes with tradeoffs: we
+are unable to analyze longitudinal trends in rat populations, seasonal
+variation across multiple years, or changes in inspection practices over
+time. Additionally, restaurants that were not inspected during 2025,
+even if they were operating, do not appear in our dataset. As a result,
+our findings reflect conditions specific to the 2025 inspection cycle
+rather than multi-year patterns or absolute restaurant counts.</p>
+<div id="import-datasets-from-nyc-open-data" class="section level2">
+<h2>Import Datasets from NYC Open Data</h2>
+<p>All data cleaning and aggregation steps were conducted in R, and
+every transformation is documented in the code chunks below. Raw
+datasets are stored in a private folder (data_not_for_github) due to
+size and cleaned subsets are saved in data_small/ for
+reproducibility.</p>
 <pre class="r"><code>rat_df =
 read_csv(&quot;data_not_for_github/NYC_rats.csv&quot;) |&gt;
 janitor::clean_names() |&gt;
@@ -353,10 +367,16 @@ pizza_df =
 </div>
 <div id="create-summaries-by-zipcode" class="section level2">
 <h2>Create Summaries by Zipcode</h2>
-<p>Next, we created a dataframe that summarized counts of rat sightings
-and pizza restaurants by zipcode. Note that we can run our analyses
-without doing this, but this simplifies our data down to just counts by
-zipcode.</p>
+<p>Next, we created a small dataframe that summarized counts of rat
+sightings and pizza restaurants by zipcode. Note that we can run our
+analyses without doing this, but this simplifies our data down to just
+counts by zipcode. We aggregated rat sightings and pizza restaurants to
+the zipcode level because: zipcodes provide a consistent administrative
+boundary available in both datasets, they allow straightforward merging
+across sources and are intuitive for interpretation, and they are
+frequently used in NYC health and housing analyses.However, zipcodes are
+not demographic boundaries, nor do they capture ecological variation as
+precisely as census tracts or community districts.</p>
 <p>Our <code>zipcode_summary</code> dataset includes the following
 information on 73 NYC zipcodes.</p>
 <ul>
