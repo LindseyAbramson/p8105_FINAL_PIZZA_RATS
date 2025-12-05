@@ -46,7 +46,7 @@ zipcode_summary <- read_csv("data_small/zipcode_summary.csv") |>
 
 For our formal statistical analysis, we analyzed the relationship between pizza restaurant count and number of rat sightings using linear regression.
 
-We regressed number of rat sightings against number of pizza restaurants, and obtained a parameter estimate and associated p-value. We found that for each additional pizza restaurant per zip code, number of rat sightings increased by an average of 1.16 (p-value = 0.001). 
+We regressed number of rat sightings against number of pizza restaurants, and obtained a parameter estimate and associated p-value. We found that for each additional pizza restaurant per zip code, number of rat sightings increased by an average of 0.565 (p-value = 0.001). 
 
 ```{r, message = FALSE, warning = FALSE}
 # Fitting a linear regression
@@ -59,7 +59,7 @@ fit |>
   knitr::kable(digits = 3)
 ```
 
-Our regression output suggests that for each additional pizza restaurant per NYC zipcode, the predicted number of rat sightings increases by a 1.16 (p-value = 0.001). The effect is statistically significant, indicating that rats may indeed be pizza lovers. Our analysis showed that number of pizza establishments is positively and significantly associated with number of rat sightings, though the effect is weak.
+Our regression output suggests that for each additional pizza restaurant per NYC zipcode, the predicted number of rat sightings increases by a 0.565 (p-value = 0.001). The effect is statistically significant, indicating that rats may indeed be pizza lovers. Our analysis showed that number of pizza establishments is positively and significantly associated with number of rat sightings, though the effect is weak.
 
 We additionally considered the r-squared value to assess the fit of our linear model. 
 
@@ -71,7 +71,7 @@ fit |>
   knitr::kable(digits = 3)
 ```
 
-Our $R^2$ value indicates that only 7% of the variability in number of rat sightings can be explained by the variability in number of pizza restaurants ($R^2$ = 0.07). This means that the majority of variability of rat sightings in explained by factors other than pizza restaurants. 
+Our $R^2$ value indicates that only 6.6% of the variability in number of rat sightings can be explained by the variability in number of pizza restaurants ($R^2$ = 0.066). This means that the majority of variability of rat sightings in explained by factors other than pizza restaurants. 
 
 A plot of residuals against fitted values and our linear model are presented below. 
 

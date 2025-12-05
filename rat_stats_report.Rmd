@@ -30,7 +30,7 @@ As we explored the data, this question evolved into several additional considera
 - Which zip codes home the largest number of pizza joints and rat sightings individually?
 - Do clusters of each phenomenon occur in the same neighborhoods, or do they diverge?
 - Is any association meaningful, or merely a reflection of broader factors like commercial density or population size?
-- Does restricting the analysis to only 2025 affect the observed relationship?
+
 
 
 
@@ -59,14 +59,14 @@ Visually exploring the distribution of rat sightings and pizza restaurants acros
 
 **Statistical Analysis**
 
-To further examine the linear relationship between number of pizza restaurants and number of rat sightings, we calculated the R-squared. The R-squared value of 0.07 indicates that only 7% of the variation in the number of rat sightings can be explained by the number of pizza restaurants in a given zip code, and 93% is explained by other factors. The weak effect of pizza establishments on prevalence of rats was a surprise to the team at the Pizza Rat Research Institute at Columbia Mailman, therefore further statistical testing was necessitated. 
+To further examine the linear relationship between number of pizza restaurants and number of rat sightings, we calculated the R-squared. The R-squared value of 0.066 indicates that only about 7% of the variation in the number of rat sightings can be explained by the number of pizza restaurants in a given zip code, and 93% is explained by other factors. The weak effect of pizza establishments on prevalence of rats was a surprise to the team at the Pizza Rat Research Institute at Columbia Mailman, therefore further statistical testing was necessitated. 
 
 
 ### Additional analysis
 
 We analyzed the relationship between pizza restaurant count and number of rat sightings using linear regression.
 
-We regressed number of rat sightings against number of pizza restaurants, and obtained a parameter estimate and associated p-value. We found that for each additional pizza restaurant per zip code, number of rat sightings increased by an average of 1.16 (p-value = 0.001). Our analysis showed that number of pizza establishments is positively and significantly associated with number of rat sightings, though the effect is weak.
+We regressed number of rat sightings against number of pizza restaurants, and obtained a parameter estimate and associated p-value. We found that for each additional pizza restaurant per zip code, number of rat sightings increased by an average of 0.565 (p-value = 0.001). Our analysis showed that number of pizza establishments is positively and significantly associated with number of rat sightings, though the effect is weak.
 
 
 
