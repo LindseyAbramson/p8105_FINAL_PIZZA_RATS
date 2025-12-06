@@ -191,7 +191,7 @@ nyc_rat_pizza |>
   labs(
     x = "# of Pizza Restaurants",
     y = "Count",
-    title = "Distribution of Pizza Resturants Variable"
+    title = "Distribution of Pizza Restaurants Variable"
   )
 ```
 
